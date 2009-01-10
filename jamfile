@@ -1,0 +1,6 @@
+LINK = g++ ;
+DEBUGGING_SYMBOLS = YES ;
+LINKFLAGS = -g ;
+C++FLAGS = -g ;
+
+Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp;
