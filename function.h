@@ -1,6 +1,8 @@
 #ifndef _FUNCTION_H_
 #define _FUNCTION_H_
 
+#include "types.h"
+
 struct compiler_type
 {
 	dynamic_types ID;
@@ -10,7 +12,7 @@ struct compiler_type
 struct compiler_variable
 {
 	compiler_type* type;
-	symbol* name;
+	symbol name;
 };
 
 struct var_collection

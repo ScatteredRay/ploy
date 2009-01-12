@@ -2,7 +2,9 @@
 
 #include "types.h"
 #include "function.h"
-#include <stdio>
+#include "environment.h"
+#include <stdio.h>
+#include <assert.h>
 
 pointer ploy_display(environment* env, pointer p)
 {
@@ -26,14 +28,14 @@ pointer ploy_display_list(environment* env, pointer p)
 pointer ploy_display_int(environment* env, pointer p)
 {
 	assert(is_type(p, DT_Int));
-	fprintf(env->out, "%d", get_int(P));
+	fprintf(env->out, "%d", get_int(p));
 	return NIL;
 }
 
 pointer ploy_display_real(environment* env, pointer p)
 {
 	assert(is_type(p, DT_Real));
-	fprintf(env->out, "%f", get_float(P));
+	fprintf(env->out, "%f", get_real(p));
 	return NIL;
 }
 
@@ -47,6 +49,7 @@ pointer ploy_display_char(environment* env, pointer p)
 pointer ploy_display_string(environment* env, pointer p)
 {
 	assert(is_type(p, DT_String));
-	puts(get_string(p), env->out);
+	fputs(get_string(p), env->out);
+	fputc('\n', env->out);
 	return NIL;
 }

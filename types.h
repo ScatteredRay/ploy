@@ -58,6 +58,7 @@ pointer pair_cdr(pointer P);
 int get_int(pointer P);
 float get_real(pointer P);
 char get_char(pointer P);
+char* get_string_ref(pointer P);
 const char* get_string(pointer P);
 pointer alloc_string(size_t len);
 

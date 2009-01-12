@@ -188,7 +188,7 @@ char* get_string_ref(pointer P)
 
 const char* get_string(pointer P)
 {
-	return get_string(pointer P);
+	return get_string_ref(P);
 }
 
 pointer alloc_string(size_t len)
@@ -207,9 +207,9 @@ pointer create_string(const char* str, size_t len)
 {
 	pointer ret = ploy_alloc(get_type(DT_String), len+1);
 	
-	strncpy(get_string(ret), str, len);
+	strncpy(get_string_ref(ret), str, len);
 	
-	(get_string(ret))[len+1] = '\0'; // not strictly nessacary while we are zeroing the mem, but for if/when we remove it.
+	(get_string_ref(ret))[len+1] = '\0'; // not strictly nessacary while we are zeroing the mem, but for if/when we remove it.
 	
 	return ret;
 }

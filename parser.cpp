@@ -74,7 +74,7 @@ pointer parse_string(parser* parse)
 		string_buf = alloc_string(string_len);
 	}
 
-	char* C = get_string(string_buf);
+	char* C = get_string_ref(string_buf);
 
 	while(*parse->curr != '"')
 	{

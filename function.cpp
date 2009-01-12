@@ -35,7 +35,7 @@ compiler_variable* create_compiler_variable_own_type(compiler_type* type, symbol
 
 compiler_variable* create_compiler_variable(compiler_type* type, symbol name)
 {
-	return create_compiler_variable_own_type(duplicate_compiler_type(type));
+	return create_compiler_variable_own_type(duplicate_compiler_type(type), name);
 }
 
 void destroy_compiler_variable(compiler_variable* var)

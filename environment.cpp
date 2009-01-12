@@ -1,3 +1,5 @@
+#include "environment.h"
+
 environment* create_environment()
 {
 	environment* env = new environment();
