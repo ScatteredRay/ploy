@@ -3,6 +3,7 @@
 #include "symbol.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 
 struct parser
@@ -15,8 +16,13 @@ struct parser
 
 pointer parser_error(parser* parse, const char* Error, ...)
 {
+	va_list ap;
+	va_start(ap, Error);
 	parse->bErrorFree = false;
-	printf("Error: Parsing Error line: %d", parse->curr_line_num);
+	printf("Error: Parsing Error line, %d: ", parse->curr_line_num);
+	vprintf(Error, ap);
+	putc('\n', stdout);
+	va_end(ap);
 	return NIL;
 }
 
@@ -98,6 +104,7 @@ pointer parse_string(parser* parse)
 			*C++ = *parse->curr++;
 	}
 	*C = '\0';
+	parse->curr++;
 
 	return string_buf;
 }
