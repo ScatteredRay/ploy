@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "symbol.h"
 #include "parser.h"
+#include "compiler.h"
 
 int main(int argc, char** argv)
 {
@@ -18,6 +19,13 @@ int main(int argc, char** argv)
 	pointer ret = parser_parse_expression(parse, "(print (cons (\"Hello\" 0.0) sym))\n");
 
 	destroy_parser(parse);
+
+	compiler* compile = init_compiler(tbl);
+
+	compiled* program = compiler_compile_expression(compile, ret);
+
+	destroy_compiler(compile);
+
 	destroy_symbol_table(tbl);
 	return 0;
 }

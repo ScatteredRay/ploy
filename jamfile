@@ -1,6 +1,9 @@
 LINK = g++ ;
 DEBUGGING_SYMBOLS = YES ;
-LINKFLAGS = -g ;
+LLVMLIBS = ../llvm/Debug/lib/ ;
+LINKFLAGS = -g -L$(LLVMLIBS) ;
+LINKLIBS = -lLLVMCore -lLLVMCodeGen -lLLVMSystem -lLLVMSupport ;
 C++FLAGS = -g ;
+HDRS = ../llvm/include/ ;
 
-Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp ;
+Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp ;
