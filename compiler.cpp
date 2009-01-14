@@ -3,6 +3,7 @@
 
 #include "compiler.h"
 #include <stdint.h>
+#include "types.h"
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -12,16 +13,19 @@
 #include <llvm/Assembly/PrintModulePass.h>
 #include <llvm/Support/IRBuilder.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/ADT/SmallVector.h>
 
 using namespace llvm;
 
 struct compiler
 {
+	Module* module;
 };
 
-struct compiled
+struct compile_block
 {
-	Module* module;
+	BasicBlock* block;
+	IRBuilder<> builder;
 };
 
 compiler* init_compiler(symbol_table* table)
@@ -34,17 +38,16 @@ void destroy_compiler(compiler* compile)
 	delete compile;
 }
 
-compiled* compiler_create_compiled(compiler* compile)
+compile_block* compiler_init_module(compiler* compile)
 {
-	compiled* comped = new compiled();
-	comped->module = new Module("");
+	compile->module = new Module("");
 	
-	Constant* c = comped->module->getOrInsertFunction("mul_add", 
-													  IntegerType::get(32),
-													  IntegerType::get(32),
-													  IntegerType::get(32),
-													  IntegerType::get(32),
-													  NULL);
+	Constant* c = compile->module->getOrInsertFunction("mul_add", 
+													   IntegerType::get(32),
+													   IntegerType::get(32),
+													   IntegerType::get(32),
+													   IntegerType::get(32),
+													   NULL);
 
 	Function* mul_add = cast<Function>(c);
 	mul_add->setCallingConv(CallingConv::C);
@@ -58,27 +61,77 @@ compiled* compiler_create_compiled(compiler* compile)
 	y->setName("y");
 	z->setName("z");
 
-	BasicBlock* block = BasicBlock::Create("entry", mul_add);
-	IRBuilder<> builder(block);
+	compile_block* block = new compile_block();
 
-	Value* tmp = builder.CreateBinOp(Instruction::Mul, x, y, "tmp");
-	Value* tmp2 = builder.CreateBinOp(Instruction::Add, tmp, z, "tmp2");
-	builder.CreateRet(tmp2);
+	block->block = BasicBlock::Create("entry", mul_add);
+	block->builder = IRBuilder<>(block->block);
 
-	return comped;
+	Value* tmp = block->builder.CreateBinOp(Instruction::Mul, x, y, "tmp");
+	Value* tmp2 = block->builder.CreateBinOp(Instruction::Add, tmp, z, "tmp2");
+	block->builder.CreateRet(tmp2);
+
+	return block;
 }
 
-compiled* compiler_compile_expression(compiler* compile, pointer P)
+llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P)
 {
-	compiled* comped = compiler_create_compiled(compile);
+
+	switch(get_type_id(P))
+	{
+	case DT_Pair:
+		if(is_type(pair_car(P), DT_Symbol))
+		{
+			// Try to resolve special forms first!
+		}
+		else
+		{
+			Value* function = compiler_resolve_expression(compile, block, pair_car(P));
+			SmallVector<Value*, 4> Params;
+			while(P != NIL)
+			{
+				Params.push_back(compiler_resolve_expression(compile, block, pair_cdr(P)));
+				if(is_type(P, DT_Pair))
+					P = pair_cdr(P);
+				else
+					P = NIL;
+			}
+		}
+		
+		break;
+	case DT_Symbol:
+		// Resolve variables
+		break;
+	case DT_Int:
+		return ConstantInt::get(APInt(32, get_int(pair_car(P)), true));
+		break;
+	case DT_Real:
+		return ConstantFP::get(APFloat(get_real(pair_car(P))));
+	case DT_String:
+		//TODO: Needs Implementation
+		break;
+	case DT_Char:
+		return ConstantInt::get(APInt(8, get_char(pair_car(P)), false));
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+}
+
+compile_block* compiler_compile_expression(compiler* compile, pointer P)
+{
+	compile_block* block = compiler_init_module(compile);
+
+	compiler_resolve_expression(compile, block, P);
 
 	// Seperate the rest of this into pass and run modules.
 	
-	verifyModule(*comped->module, PrintMessageAction);
+	verifyModule(*compile->module, PrintMessageAction);
 
 	PassManager PM;
 	PM.add(createPrintModulePass(&llvm::outs()));
-	PM.run(*comped->module);
+	PM.run(*compile->module);
 
 	return NULL;
 }

@@ -49,6 +49,7 @@ pointer create_string(const char* str);
 pointer create_string(const char* str, size_t len);
 
 bool is_type(pointer P, dynamic_types type);
+dynamic_types get_type_id(pointer P);
 
 void destroy_list(pointer P);
 

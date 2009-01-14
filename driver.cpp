@@ -16,13 +16,13 @@ int main(int argc, char** argv)
 
 	parser* parse = init_parser(tbl);
 
-	pointer ret = parser_parse_expression(parse, "(print (cons (\"Hello\" 0.0) sym))\n");
+	pointer ret = parser_parse_expression(parse, "(define (mul_add x y z) (+ (* x y) z))\n");
 
 	destroy_parser(parse);
 
 	compiler* compile = init_compiler(tbl);
 
-	compiled* program = compiler_compile_expression(compile, ret);
+	compile_block* program = compiler_compile_expression(compile, ret);
 
 	destroy_compiler(compile);
 

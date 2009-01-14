@@ -4,12 +4,12 @@
 #include "symbol.h"
 
 struct compiler;
-struct compiled;
+struct compile_block;
 
 typedef void* pointer;
 
 compiler* init_compiler(symbol_table* table);
 void destroy_compiler(compiler* compile);
-compiled* compiler_compile_expression(compiler* compile, pointer P);
+compile_block* compiler_compile_expression(compiler* compile, pointer P);
 
 #endif //_COMPILER_H_
