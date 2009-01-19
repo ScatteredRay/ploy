@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "symbol.h"
 #include "parser.h"
+#include "types.h"
 #include "compiler.h"
 
 int main(int argc, char** argv)
@@ -18,6 +19,29 @@ int main(int argc, char** argv)
 
 	pointer ret = parser_parse_expression(parse, "(define (mul_add x y z) (+ (* x y) z))\n");
 
+	print_object(ret, tbl);
+	putchar('\n');
+
+	pointer tmp = create_pair(create_symbol(tbl, "define"), 
+							  create_pair(create_pair(create_symbol(tbl, "mul_add"),
+													  create_pair(create_symbol(tbl,"x"),
+																  create_pair(create_symbol(tbl, "y"),
+																			  create_pair(create_symbol(tbl, "z"), NIL)))),
+										  create_pair(create_pair(create_symbol(tbl, "+"),
+																  create_pair(create_int(1),
+																			  create_pair(create_int(2), NIL))), NIL)));
+
+		
+
+	print_object(tmp, tbl);
+	putchar('\n');
+
+	destroy_list(tmp);
+	tmp = create_pair(create_int(1), create_int(2));
+
+	print_object(tmp, tbl);
+	putchar('\n');
+
 	destroy_parser(parse);
 
 	compiler* compile = init_compiler(tbl);
@@ -29,3 +53,4 @@ int main(int argc, char** argv)
 	destroy_symbol_table(tbl);
 	return 0;
 }
+
