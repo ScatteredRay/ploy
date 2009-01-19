@@ -240,21 +240,22 @@ void print_object(pointer P, symbol_table* table)
 	{
 	case DT_Pair:
 		if(is_type(pair_car(P), DT_Pair))
-			putc('(', out);
-
-		print_object(pair_car(P), table);
-
-		if(pair_cdr(P) == NIL)
 		{
+			putc('(', out);
+			print_object(pair_car(P), table);
 			putc(')', out);
-			break;
 		}
+		else
+			print_object(pair_car(P), table);
 		
 		putc(' ', out);
-		if(!is_type(pair_cdr(P), DT_Pair))
-			fputs(". ", out);
-
-		print_object(pair_cdr(P), table);
+		if(pair_cdr(P) != NIL)
+		{
+			if(!is_type(pair_cdr(P), DT_Pair))
+				fputs(". ", out);
+			
+			print_object(pair_cdr(P), table);
+		}
 		break;
 	case DT_Symbol:
 		fputs(string_from_symbol(table, *get_symbol(P)), out);
