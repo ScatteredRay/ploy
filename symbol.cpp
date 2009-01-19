@@ -105,6 +105,11 @@ char char_to_lower(char C)
 	return C;
 }
 
+const char* string_from_symbol(symbol_table* tbl, symbol sym)
+{
+	return tbl->Symbols[sym.Id];
+}
+
 symbol symbol_from_string(symbol_table* tbl, const char* string, size_t len)
 {
 	//TODO: remove memcpy/alloc

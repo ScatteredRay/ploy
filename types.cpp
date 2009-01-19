@@ -1,6 +1,7 @@
 #include "types.h"
 #include "symbol.h"
 #include <assert.h>
+#include <cstdio>
 
 
 //TODO: allow compile time code transformation by appending source data (strings, and line info to the type data.
@@ -58,7 +59,7 @@ dynamic_types get_type_id(pointer P)
 
 bool is_type(pointer P, dynamic_types type)
 {
-	return get_type_id(P) == type;
+	return (P != NIL) && (get_type_id(P) == type);
 }
 
 void* get_value(pointer P)
@@ -224,4 +225,57 @@ void destroy_list(pointer P)
 			destroy_list(pair_cdr(P));
 	}
 	ploy_free(P);
+}
+
+void print_object(pointer P, symbol_table* table)
+{
+	FILE* out = stdout;
+	if(P == NIL)
+	{
+		fputs("NIL", out);
+		return;
+	}
+
+	switch(get_type_id(P))
+	{
+	case DT_Pair:
+		if(is_type(pair_car(P), DT_Pair))
+			putc('(', out);
+
+		print_object(pair_car(P), table);
+
+		if(pair_cdr(P) == NIL)
+		{
+			putc(')', out);
+			break;
+		}
+		
+		putc(' ', out);
+		if(!is_type(pair_cdr(P), DT_Pair))
+			fputs(". ", out);
+
+		print_object(pair_cdr(P), table);
+		break;
+	case DT_Symbol:
+		fputs(string_from_symbol(table, *get_symbol(P)), out);
+		break;
+	case DT_Int:
+		fprintf(out, "%d", get_int(P));
+		break;
+	case DT_Real:
+		fprintf(out, "%f", get_real(P));
+		break;
+	case DT_String:
+		fputs(get_string(P), out);
+		break;
+	case DT_Char:
+		putc(get_char(P), out);
+		break;
+	case DT_Invalid:
+		fputs("#INVALID#", out);
+		break;
+	case DT_Any:
+		fputs("#ANY#", out);
+		break;
+	}
 }

@@ -26,6 +26,7 @@ symbol_table* init_symbol_table();
 void destroy_symbol_table(symbol_table* tbl);
 symbol symbol_from_string(symbol_table* tbl, const char* string);
 symbol symbol_from_string(symbol_table* tbl, const char* string, size_t len);
+const char* string_from_symbol(symbol_table* tbl, symbol sym);
 
 #endif //_SYMBOL_H_
 

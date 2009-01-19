@@ -56,12 +56,15 @@ void destroy_list(pointer P);
 pointer pair_car(pointer P);
 pointer pair_cdr(pointer P);
 
+symbol* get_symbol(pointer P);
 int get_int(pointer P);
 float get_real(pointer P);
 char get_char(pointer P);
 char* get_string_ref(pointer P);
 const char* get_string(pointer P);
 pointer alloc_string(size_t len);
+
+void print_object(pointer P, symbol_table* table);
 
 #define car(p) pair_car(p)
 #define cdr(p) pair_cdr(p)
