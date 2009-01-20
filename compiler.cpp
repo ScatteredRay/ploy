@@ -4,6 +4,7 @@
 #include "compiler.h"
 #include <stdint.h>
 #include "types.h"
+#include <map>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -18,10 +19,22 @@
 
 using namespace llvm;
 
+struct compiler_function
+{
+	llvm::Value* (*special_form)(compiler*, compile_block*, pointer);
+	llvm::Function* function;
+	compiler_function()
+	{
+		special_form = NULL;
+		function = NULL;
+	}
+};
+
 struct compiler
 {
 	symbol_table* sym_table;
 	Module* module;
+	std::map<symbol, compiler_function, sym_cmp> function_table;
 };
 
 struct compile_block
@@ -32,10 +45,13 @@ struct compile_block
 	Value* last_exp;
 };
 
+void init_function_table(compiler* compile);
+
 compiler* init_compiler(symbol_table* table)
 {
 	compiler* compile = new compiler();
 	compile->sym_table = table;
+	init_function_table(compile);
 	return compile;
 }
 
@@ -143,19 +159,18 @@ llvm::Value* compiler_resolve_bin_op(compiler* compile, compile_block* block, po
 	return lhv;
 }
 
-llvm::Value* compiler_run_special_form(compiler* compile, compile_block* block, pointer P)
+llvm::Value* compiler_define_form(compiler* compile, compile_block* block, pointer P)
 {
-	symbol S = *get_symbol(pair_car(P));
-	if(S == symbol_from_string(compile->sym_table, "Define"))
-	{
 		pointer Def = pair_car(pair_cdr((P)));
 		if(is_type(Def, DT_Pair))
 		{
 			// Function define
-			
-			compile_block* FunctionBlock = compiler_create_function_block(compile, string_from_symbol(compile->sym_table, *get_symbol(pair_car(Def))), IntegerType::get(32), pair_cdr(Def));
+			symbol fun_sym = *get_symbol(pair_car(Def));
+			const char* fun_name = string_from_symbol(compile->sym_table, fun_sym);
+			compile_block* FunctionBlock = compiler_create_function_block(compile, fun_name, IntegerType::get(32), pair_cdr(Def));
 			compiler_resolve_expression_list(compile, FunctionBlock, pair_cdr(pair_cdr(P)));
 			FunctionBlock->builder.CreateRet(FunctionBlock->last_exp);
+			compile->function_table[fun_sym].function = FunctionBlock->function;
 			llvm::Value* Ret = FunctionBlock->function;
 			compiler_destroy_function_block(FunctionBlock);
 			return Ret;
@@ -166,15 +181,32 @@ llvm::Value* compiler_run_special_form(compiler* compile, compile_block* block, 
 			// Var define
 			return NULL;
 		}
-	}
-	else if(S == symbol_from_string(compile->sym_table, "+"))
-	{
-		return compiler_resolve_bin_op(compile, block, pair_cdr(P), Instruction::Add);
-	}
-	else if(S == symbol_from_string(compile->sym_table, "*"))
-	{
-		return compiler_resolve_bin_op(compile, block, pair_cdr(P), Instruction::Mul);
-	}
+}
+
+llvm::Value* compiler_add_form(compiler* compile, compile_block* block, pointer P)
+{
+	return compiler_resolve_bin_op(compile, block, pair_cdr(P), Instruction::Add);
+}
+
+llvm::Value* compiler_mul_form(compiler* compile, compile_block* block, pointer P)
+{
+	return compiler_resolve_bin_op(compile, block, pair_cdr(P), Instruction::Mul);
+}
+
+void init_function_table(compiler* compile)
+{
+	compile->function_table[symbol_from_string(compile->sym_table, "Define")].special_form = compiler_define_form;
+	compile->function_table[symbol_from_string(compile->sym_table, "+")].special_form = compiler_add_form;
+	compile->function_table[symbol_from_string(compile->sym_table, "*")].special_form = compiler_mul_form;
+}
+
+llvm::Value* compiler_resolve_variable(compiler* compile, compile_block* block, symbol S)
+{
+		const char* name = string_from_symbol(compile->sym_table, S);
+		Value* var = block->function->getValueSymbolTable().lookup(name);
+		if(var == NULL)
+			var = compile->module->getGlobalVariable(name);
+		return var;
 }
 
 llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P)
@@ -183,47 +215,65 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 	switch(get_type_id(P))
 	{
 	case DT_Pair:
+	{
+		Function* function = NULL;
 		if(is_type(pair_car(P), DT_Symbol))
 		{
 			// Try to resolve special forms first!
-			return compiler_run_special_form(compile, block, P);
+			symbol S = *get_symbol(pair_car(P));
+			compiler_function* fun = &compile->function_table[S];
+			if(fun->special_form)
+				return (*fun->special_form)(compile, block, P);
+			else if(fun->function)
+				function = fun->function;
+			else
+			{
+				Value* var = compiler_resolve_variable(compile, block, S);
+				if(var && isa<Function>(var))
+					function = cast<Function>(var);
+				else
+					assert(false);
+			}
 		}
 		else
 		{
-			assert(false);
-			Value* function = compiler_resolve_expression(compile, block, pair_car(P));
-			SmallVector<Value*, 4> Params;
-			P = pair_cdr(P);
-			while(P != NIL)
-			{
-				Params.push_back(compiler_resolve_expression(compile, block, pair_car(P)));
-				if(is_type(P, DT_Pair))
-					P = pair_cdr(P);
-				else
-					P = NIL;
-			}
-			
+			Value* var = compiler_resolve_expression(compile, block, pair_car(P));
+			if(var && isa<Function>(var))
+				function = cast<Function>(var);
+			else
+				assert(false);
+		}
+
+		SmallVector<Value*, 4> Params;
+		P = pair_cdr(P);
+		while(P != NIL)
+		{
+			Params.push_back(compiler_resolve_expression(compile, block, pair_car(P)));
+			if(is_type(P, DT_Pair))
+				P = pair_cdr(P);
+			else
+				P = NIL;
 		}
 		
-		break;
+		return block->builder.CreateCall(function, Params.begin(), Params.end());
+	}
 	case DT_Symbol:
+	{
 		// Resolve variables
-		const char* name = string_from_symbol(compile->sym_table, *get_symbol(P));
-		Value* var = block->function->getValueSymbolTable().lookup(name);
-		if(var == NULL)
-			var = compile->module->getGlobalVariable(name);
+		Value* var = compiler_resolve_variable(compile, block, *get_symbol(P));
 		assert(var);
 		return var;
+	}
 	case DT_Int:
-		return ConstantInt::get(APInt(32, get_int(pair_car(P)), true));
+		return ConstantInt::get(APInt(32, get_int(P), true));
 	case DT_Real:
-		return ConstantFP::get(APFloat(get_real(pair_car(P))));
+		return ConstantFP::get(APFloat(get_real(P)));
 	case DT_String:
 		//TODO: Needs Implementation
 		assert(false);
 		break;
 	case DT_Char:
-		return ConstantInt::get(APInt(8, get_char(pair_car(P)), false));
+		return ConstantInt::get(APInt(8, get_char(P), false));
 	default:
 		assert(false);
 		break;

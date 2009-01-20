@@ -22,6 +22,14 @@ struct symbol
 	}
 };
 
+struct sym_cmp
+{
+	bool operator()(symbol s1, symbol s2) const
+	{
+		return s1.Id < s2.Id;
+	}
+};
+
 symbol_table* init_symbol_table();
 void destroy_symbol_table(symbol_table* tbl);
 symbol symbol_from_string(symbol_table* tbl, const char* string);
