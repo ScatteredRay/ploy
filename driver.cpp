@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "types.h"
 #include "compiler.h"
+#include "typeinfo.h"
 
 int main(int argc, char** argv)
 {
@@ -17,32 +18,17 @@ int main(int argc, char** argv)
 
 	parser* parse = init_parser(tbl);
 
-	pointer ret = parser_parse_expression(parse, "(define (mul_add x y z) (+ (* x y) z))\n(mul_add 1 2 3)\n");
+	pointer ret = parser_parse_expression(parse, "(define (mul_add x :int y : int z :int) :(int) (+ (* x y) z))\n(mul_add 1 2 3)\n");
 
 	print_object(ret, tbl);
 	putchar('\n');
 
-	pointer tmp = create_pair(create_symbol(tbl, "define"), 
-							  create_pair(create_pair(create_symbol(tbl, "mul_add"),
-													  create_pair(create_symbol(tbl,"x"),
-																  create_pair(create_symbol(tbl, "y"),
-																			  create_pair(create_symbol(tbl, "z"), NIL)))),
-										  create_pair(create_pair(create_symbol(tbl, "+"),
-																  create_pair(create_int(1),
-																			  create_pair(create_int(2), NIL))), NIL)));
-
-		
-
-	print_object(tmp, tbl);
-	putchar('\n');
-
-	destroy_list(tmp);
-	tmp = create_pair(create_int(1), create_int(2));
-
-	print_object(tmp, tbl);
-	putchar('\n');
-
 	destroy_parser(parse);
+
+	transform_tree_gen_typeinfo(ret, tbl);
+
+	print_object(ret, tbl);
+	putchar('\n');
 
 	compiler* compile = init_compiler(tbl);
 

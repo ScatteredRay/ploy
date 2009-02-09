@@ -6,4 +6,4 @@ LINKLIBS = -lLLVMCore -lLLVMCodeGen -lLLVMSystem -lLLVMSupport ;
 C++FLAGS = -g ;
 HDRS = ../llvm/include/ ;
 
-Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp ;
+Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp ;

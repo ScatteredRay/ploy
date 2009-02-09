@@ -97,6 +97,24 @@ pointer pair_cdr(pointer P)
 	return get_pair(P)->_cdr;
 }
 
+// we don't have any complicated trees atm, so we can just free the old when we set
+// watch out though, it'll only free the first link in a list.
+// also not in the main header so we don't overuse.
+
+void set_car(pointer P, pointer V)
+{
+	assert(is_type(P, DT_Pair));
+	ploy_free(get_pair(P)->_car);
+	get_pair(P)->_car = V;
+}
+
+void set_cdr(pointer P, pointer V)
+{
+	assert(is_type(P, DT_Pair));
+	ploy_free(get_pair(P)->_car);
+	get_pair(P)->_cdr = V;
+}
+
 symbol* get_symbol(pointer P)
 {
 	assert(is_type(P, DT_Symbol));

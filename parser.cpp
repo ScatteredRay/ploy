@@ -33,7 +33,7 @@ bool is_whitespace(char c)
 
 bool is_delimiter(char c)
 {
-	return is_whitespace(c) || (c == ')') || (c == '\0');
+	return is_whitespace(c) || (c == '(') || (c == ')') || (c == '\0');
 }
 
 bool is_symbol_char(char c)
