@@ -2,8 +2,9 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "compiler.h"
-#include <stdint.h>
 #include "types.h"
+#include "typeinfo.h"
+#include <stdint.h>
 #include <map>
 
 #include <llvm/Module.h>
@@ -72,17 +73,12 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 
 	while(P != NIL)
 	{
-		if(is_type(P, DT_Pair))
-		{
-			assert(!is_type(pair_car(P), DT_Pair));
-			ParamTypes.push_back(IntegerType::get(32));
-			P = pair_cdr(P);
-		}
-		else
-		{
-			ParamTypes.push_back(IntegerType::get(32));
-			P = NIL;
-		}
+		assert(is_type(P, DT_Pair));
+		assert(is_type(pair_car(P), DT_Symbol));
+		assert(is_type(cadr(P), DT_TypeInfo));
+
+		ParamTypes.push_back(typeinfo_get_llvm_type(cadr(P)));
+		P = cddr(P);
 	}
 
 	compile_block* block = new compile_block();
@@ -100,18 +96,12 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	while(P != NIL)
 	{
 		Value* v = args++;
-		if(is_type(P, DT_Pair))
-		{
-			assert(is_type(pair_car(P), DT_Symbol));
-			v->setName(string_from_symbol(compile->sym_table, *get_symbol(pair_car(P))));
-			P = pair_cdr(P);
-		}
-		else
-		{
-			assert(is_type(P, DT_Symbol));
-			v->setName(string_from_symbol(compile->sym_table, *get_symbol(P)));
-			P = NIL;
-		}
+		assert(is_type(P, DT_Pair));
+		assert(is_type(pair_car(P), DT_Symbol));
+		assert(is_type(cadr(P), DT_TypeInfo));
+
+		v->setName(string_from_symbol(compile->sym_table, *get_symbol(pair_car(P))));
+		P = cddr(P);
 	}
 
 	block->block = BasicBlock::Create("entry", block->function);
@@ -161,14 +151,15 @@ llvm::Value* compiler_resolve_bin_op(compiler* compile, compile_block* block, po
 
 llvm::Value* compiler_define_form(compiler* compile, compile_block* block, pointer P)
 {
-		pointer Def = pair_car(pair_cdr((P)));
+		pointer Def = cadr(P);
 		if(is_type(Def, DT_Pair))
 		{
 			// Function define
 			symbol fun_sym = *get_symbol(pair_car(Def));
 			const char* fun_name = string_from_symbol(compile->sym_table, fun_sym);
-			compile_block* FunctionBlock = compiler_create_function_block(compile, fun_name, IntegerType::get(32), pair_cdr(Def));
-			compiler_resolve_expression_list(compile, FunctionBlock, pair_cdr(pair_cdr(P)));
+			assert(is_type(caddr(P), DT_TypeInfo));
+			compile_block* FunctionBlock = compiler_create_function_block(compile, fun_name, typeinfo_get_llvm_type(caddr(P)), pair_cdr(Def));
+			compiler_resolve_expression_list(compile, FunctionBlock, cdddr(P));
 			FunctionBlock->builder.CreateRet(FunctionBlock->last_exp);
 			compile->function_table[fun_sym].function = FunctionBlock->function;
 			llvm::Value* Ret = FunctionBlock->function;

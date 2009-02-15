@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
 	parser* parse = init_parser(tbl);
 
-	pointer ret = parser_parse_expression(parse, "(define (mul_add x :int y : int z :int) :(int) (+ (* x y) z))\n(mul_add 1 2 3)\n");
+	pointer ret = parser_parse_expression(parse, "(define (mul_add x :float y : float z :float) :(float) (+ (* x y) z))\n(mul_add 1.0 2.0 3.0)\n");
 
 	print_object(ret, tbl);
 	putchar('\n');

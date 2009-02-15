@@ -64,9 +64,9 @@ void print_typeinfo(pointer P, symbol_table* tbl, FILE* out)
 
 const size_t type_info_size = sizeof(typeinfo);
 
-const llvm::Type* typeinfo_get_llvm_type(typeinfo* type)
+const llvm::Type* typeinfo_get_llvm_type(pointer type)
 {
-	return type->get_llvm_type();
+	return get_typeinfo(type)->get_llvm_type();
 }
 
 pointer make_primitive_typeinfo(symbol sym, symbol_table* tbl)
