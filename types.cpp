@@ -1,8 +1,8 @@
 #include "types.h"
 #include "symbol.h"
+#include "typeinfo.h"
 #include <assert.h>
 #include <cstdio>
-
 
 //TODO: allow compile time code transformation by appending source data (strings, and line info to the type data.
 
@@ -10,12 +10,13 @@
 // It is essential that this is orderd in the same way the enums are numbered.
 static const dynamic_type TypeList[DT_Invalid] =
 {
-	{DT_Pair, sizeof(pair)},
-	{DT_Symbol, sizeof(symbol)},
-	{DT_Int, sizeof(int)},
-	{DT_Real, sizeof(float)},
-	{DT_String, invalid_size},
-	{DT_Char, sizeof(char)}
+	{DT_Pair, sizeof(pair), NULL},
+	{DT_Symbol, sizeof(symbol), NULL},
+	{DT_Int, sizeof(int), NULL},
+	{DT_Real, sizeof(float), NULL},
+	{DT_String, invalid_size, NULL},
+	{DT_Char, sizeof(char), NULL},
+	{DT_TypeInfo, sizeof(type_info_size), typeinfo_finish}
 };
 
 const dynamic_type* get_type(dynamic_types typeId)
@@ -49,6 +50,9 @@ pointer ploy_alloc(const dynamic_type* type)
 
 void ploy_free(pointer P)
 {
+	const dynamic_type* T = get_type(get_type_id(P));
+	if(T->finish)
+		T->finish(P);
 	free(P);
 }
 
@@ -111,7 +115,7 @@ void set_car(pointer P, pointer V)
 void set_cdr(pointer P, pointer V)
 {
 	assert(is_type(P, DT_Pair));
-	ploy_free(get_pair(P)->_car);
+	ploy_free(get_pair(P)->_cdr);
 	get_pair(P)->_cdr = V;
 }
 
@@ -289,6 +293,9 @@ void print_object(pointer P, symbol_table* table)
 		break;
 	case DT_Char:
 		putc(get_char(P), out);
+		break;
+	case DT_TypeInfo:
+		print_typeinfo(P, table, out);
 		break;
 	case DT_Invalid:
 		fputs("#INVALID#", out);

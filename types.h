@@ -3,7 +3,7 @@
 #include <cstring>
 #include "symbol.h"
 
-#define invalid_size -1
+const size_t invalid_size = -1;
 
 typedef void* pointer;
 const pointer NIL = NULL;
@@ -18,14 +18,16 @@ enum dynamic_types
 	DT_Real = 3,
 	DT_String = 4,
 	DT_Char = 5,
-	DT_Invalid = 6,
-	DT_Any = 7
+	DT_TypeInfo = 6,
+	DT_Invalid = 7,
+	DT_Any = 8
 };
 
 struct dynamic_type
 {
 	dynamic_types Id;
 	size_t AllocSize;
+	void (*finish)(pointer P);
 };
 
 struct pair
