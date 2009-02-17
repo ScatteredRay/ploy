@@ -5,9 +5,11 @@
 #include "compiler.h"
 #include "typeinfo.h"
 
+symbol_table* sym_tbl;
+
 int main(int argc, char** argv)
 {
-	symbol_table* tbl = init_symbol_table();
+	symbol_table* tbl = sym_tbl = init_symbol_table();
 
 	printf("Hello:%d\n", symbol_from_string(tbl, "Hello").Id);
 	printf("hello:%d\n", symbol_from_string(tbl, "hello").Id);
@@ -18,7 +20,7 @@ int main(int argc, char** argv)
 
 	parser* parse = init_parser(tbl);
 
-	pointer ret = parser_parse_expression(parse, "(define (mul_add x :float y : float z :float) :(float) (+ (* x y) z))\n(mul_add 1.0 2.0 3.0)\n");
+	pointer ret = parser_parse_expression(parse, "(define (div_add x :float y : float z :float) :(float) (+ (/ x y) z))\n(div_add 1.0 2.0 3.0)\n");
 
 	print_object(ret, tbl);
 	putchar('\n');
