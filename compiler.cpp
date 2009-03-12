@@ -21,7 +21,38 @@ void destroy_compiler(compiler* compile)
 llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P);
 llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* block, pointer P);
 
-compile_block* compiler_create_function_block(compiler* compile, const char* Name, const llvm::Type* RetType, pointer Params)
+compiler_scope* compiler_create_empty_scope(compiler_scope* parent_scope)
+{
+	compiler_scope* scope = new compiler_scope();
+	scope->parent_scope = parent_scope;
+	return scope;
+}
+
+void compiler_destroy_scope(compiler_scope* scope)
+{
+	delete scope;
+}
+
+void compiler_add_to_scope(compile_block* block, symbol sym, llvm::Value* val)
+{
+	// Error on redef of variable at same scope... not dynamically bound in compiliation mode.
+	block->current_scope->scope_map[sym] = val;
+}
+
+llvm::Value* compiler_find_in_scope(compile_block* block, symbol sym)
+{
+	compiler_scope* scope = block->current_scope;
+	while(scope != NULL)
+	{
+		std::map<symbol, llvm::Value*>::iterator it = scope->scope_map.find(sym);
+		if(it != scope->scope_map.end())
+			return it->second;
+		scope = scope->parent_scope;
+	}
+	return NULL;
+}
+
+compile_block* compiler_create_function_block(compiler* compile, const char* Name, const llvm::Type* RetType, pointer Params, compile_block* parent_block)
 {
 
 	std::vector<const Type*> ParamTypes;
@@ -47,6 +78,11 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	block->function = cast<Function>(c);
 	block->function->setCallingConv(CallingConv::C);
 
+	compiler_scope* parent_scope = NULL;
+	if(parent_block)
+		parent_scope = parent_block->current_scope;
+	block->current_scope = compiler_create_empty_scope(parent_scope);
+
 	Function::arg_iterator args = block->function->arg_begin();
 
 	P = Params;
@@ -57,7 +93,9 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 		assert(is_type(pair_car(P), DT_Symbol));
 		assert(is_type(cadr(P), DT_TypeInfo));
 
-		v->setName(string_from_symbol(compile->sym_table, *get_symbol(pair_car(P))));
+		symbol S = *get_symbol(pair_car(P));
+		v->setName(string_from_symbol(compile->sym_table, S));
+		compiler_add_to_scope(block, S, v);
 		P = cddr(P);
 	}
 
@@ -74,6 +112,7 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 void compiler_destroy_function_block(compile_block* block)
 {
 	// llvm should maintain it's own types, we just want to get rid of the block we pass around to build it.
+	compiler_destroy_scope(block->current_scope);
 	delete block;
 }
 
@@ -86,11 +125,9 @@ compile_block* compiler_init_module(compiler* compile)
 
 llvm::Value* compiler_resolve_variable(compiler* compile, compile_block* block, symbol S)
 {
-		const char* name = string_from_symbol(compile->sym_table, S);
-		Value* var = block->function->getValueSymbolTable().lookup(name);
-		if(var == NULL)
-			var = compile->module->getGlobalVariable(name);
-		return var;
+	Value* var = compiler_find_in_scope(block, S);
+	assert(var);
+	return var;
 }
 
 llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P)
@@ -105,28 +142,16 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 		{
 			// Try to resolve special forms first!
 			symbol S = *get_symbol(pair_car(P));
-			compiler_function* fun = &compile->function_table[S];
-			if(fun->special_form)
+			compiler_special_form* fun = &compile->form_table[S];
+			if(fun && fun->special_form)
 				return (*fun->special_form)(compile, block, P);
-			else if(fun->function)
-				function = fun->function;
-			else
-			{
-				Value* var = compiler_resolve_variable(compile, block, S);
-				if(var && isa<Function>(var))
-					function = cast<Function>(var);
-				else
-					assert(false);
-			}
 		}
+
+		Value* var = compiler_resolve_expression(compile, block, pair_car(P));
+		if(var && isa<Function>(var))
+			function = cast<Function>(var);
 		else
-		{
-			Value* var = compiler_resolve_expression(compile, block, pair_car(P));
-			if(var && isa<Function>(var))
-				function = cast<Function>(var);
-			else
-				assert(false);
-		}
+			assert(false);
 
 		SmallVector<Value*, 4> Params;
 		P = pair_cdr(P);

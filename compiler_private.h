@@ -19,22 +19,27 @@
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ValueSymbolTable.h>
 
+struct compiler_scope
+{
+	compiler_scope* parent_scope;
+	std::map<symbol, llvm::Value*, sym_cmp> scope_map;
+};
+
 struct compile_block
 {
 	llvm::Function* function;
 	llvm::BasicBlock* block;
 	llvm::IRBuilder<> builder;
 	llvm::Value* last_exp;
+	compiler_scope* current_scope;
 };
 
-struct compiler_function
+struct compiler_special_form
 {
 	llvm::Value* (*special_form)(compiler*, compile_block*, pointer);
-	llvm::Function* function;
-	compiler_function()
+	compiler_special_form()
 	{
 		special_form = NULL;
-		function = NULL;
 	}
 };
 
@@ -42,13 +47,15 @@ struct compiler
 {
 	symbol_table* sym_table;
 	llvm::Module* module;
-	std::map<symbol, compiler_function, sym_cmp> function_table;
+	std::map<symbol, compiler_special_form, sym_cmp> form_table;
 };
 
 void init_function_table(compiler* compile);
 
-compile_block* compiler_create_function_block(compiler* compile, const char* Name="", const llvm::Type* RetType = llvm::Type::VoidTy, pointer Params=NIL);
+compile_block* compiler_create_function_block(compiler* compile, const char* Name="", const llvm::Type* RetType = llvm::Type::VoidTy, pointer Params=NIL, compile_block* parent_block = NULL);
 void compiler_destroy_function_block(compile_block* block);
+void compiler_add_to_scope(compile_block* block, symbol sym, llvm::Value* val);
+llvm::Value* compiler_find_in_scope(compile_block* block, symbol sym);
 llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P);
 llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* block, pointer P);
 
