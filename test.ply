@@ -1,0 +1,2 @@
+(define (div_add x :float y : float z :float) :(float) (+ (/ x y) z))
+(div_add 1.0 2.0 3.0)
