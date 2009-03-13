@@ -59,7 +59,9 @@ int main(int argc, const char** argv)
 
 	compiler* compile = init_compiler(tbl);
 
-	compile_block* program = compiler_compile_expression(compile, ret);
+	compiler_compile_expression(compile, ret);
+	compiler_print_module(compile);
+	compiler_write_asm_file(compile, "out.ll");
 
 	destroy_compiler(compile);
 

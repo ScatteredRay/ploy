@@ -10,6 +10,8 @@ typedef void* pointer;
 
 compiler* init_compiler(symbol_table* table);
 void destroy_compiler(compiler* compile);
-compile_block* compiler_compile_expression(compiler* compile, pointer P);
+void compiler_compile_expression(compiler* compile, pointer P);
+void compiler_print_module(compiler* compile);
+void compiler_write_asm_file(compiler* compile, const char* output_filename);
 
 #endif //_COMPILER_H_

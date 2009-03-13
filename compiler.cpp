@@ -2,6 +2,8 @@
 #include "types.h"
 #include "typeinfo.h"
 #include <stdint.h>
+#include <llvm/CodeGen/FileWriters.h>
+#include <fstream>
 
 using namespace llvm;
 
@@ -120,7 +122,7 @@ compile_block* compiler_init_module(compiler* compile)
 {
 	compile->module = new Module("");
 
-	return compiler_create_function_block(compile, "_Entry");
+	return compiler_create_function_block(compile, "main");
 }
 
 llvm::Value* compiler_resolve_variable(compiler* compile, compile_block* block, symbol S)
@@ -207,7 +209,7 @@ llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* 
 	return LastExp;
 }
 
-compile_block* compiler_compile_expression(compiler* compile, pointer P)
+void compiler_compile_expression(compiler* compile, pointer P)
 {
 	compile_block* block = compiler_init_module(compile);
 
@@ -219,10 +221,20 @@ compile_block* compiler_compile_expression(compiler* compile, pointer P)
 	// Seperate the rest of this into pass and run modules.
 	
 	verifyModule(*compile->module, PrintMessageAction);
+}
 
+void compiler_print_module(compiler* compile)
+{
 	PassManager PM;
 	PM.add(createPrintModulePass(&llvm::outs()));
 	PM.run(*compile->module);
+}
 
-	return NULL;
+void compiler_write_asm_file(compiler* compile, const char* output_filename)
+{
+	std::ofstream out_file(output_filename);
+	llvm::raw_os_ostream raw_out(out_file);
+	PassManager PM;
+	PM.add(createPrintModulePass(&raw_out));
+	PM.run(*compile->module);
 }
