@@ -7,6 +7,7 @@
 #include "types.h"
 #include "compiler.h"
 #include <map>
+#include <vector>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -18,6 +19,11 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ValueSymbolTable.h>
+
+namespace llvm
+{
+	class Type;
+}
 
 struct compiler_scope
 {
@@ -58,6 +64,7 @@ void compiler_add_to_scope(compile_block* block, symbol sym, llvm::Value* val);
 llvm::Value* compiler_find_in_scope(compile_block* block, symbol sym);
 llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P);
 llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* block, pointer P);
+std::vector<const llvm::Type*> compiler_populate_param_types(pointer P);
 
 #endif //_compiler_private_h_
 

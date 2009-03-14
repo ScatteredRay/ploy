@@ -54,12 +54,9 @@ llvm::Value* compiler_find_in_scope(compile_block* block, symbol sym)
 	return NULL;
 }
 
-compile_block* compiler_create_function_block(compiler* compile, const char* Name, const llvm::Type* RetType, pointer Params, compile_block* parent_block)
+std::vector<const Type*> compiler_populate_param_types(pointer P)
 {
-
 	std::vector<const Type*> ParamTypes;
-
-	pointer P = Params;
 
 	while(P != NIL)
 	{
@@ -69,15 +66,32 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 
 		ParamTypes.push_back(typeinfo_get_llvm_type(cadr(P)));
 		P = cddr(P);
-	}
+	}	
+
+	return ParamTypes;
+}
+
+compile_block* compiler_create_function_block(compiler* compile, const char* Name, const llvm::Type* RetType, pointer Params, compile_block* parent_block)
+{
+
+	std::vector<const Type*> ParamTypes = compiler_populate_param_types(Params);
 
 	compile_block* block = new compile_block();
 
 	FunctionType* ft = FunctionType::get(RetType, ParamTypes, false);
+	
+	Function* f;
+	Constant* c = compile->module->getFunction(Name);
+	if(c)
+	{
+		assert(isa<Function>(c));
+		f = cast<Function>(c);
+		assert(f->arg_size() == ParamTypes.size());
+	}
+	else
+		f  = Function::Create(ft, Function::ExternalLinkage, Name, compile->module);
 
-	Constant* c = compile->module->getOrInsertFunction(Name, ft);
-	assert(isa<Function>(c));
-	block->function = cast<Function>(c);
+	block->function = f;
 	block->function->setCallingConv(CallingConv::C);
 
 	compiler_scope* parent_scope = NULL;
@@ -87,7 +101,7 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 
 	Function::arg_iterator args = block->function->arg_begin();
 
-	P = Params;
+	pointer P = Params;
 	while(P != NIL)
 	{
 		Value* v = args++;
@@ -101,6 +115,7 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 		P = cddr(P);
 	}
 
+	f->deleteBody();
 	block->block = BasicBlock::Create("entry", block->function);
 	block->builder = IRBuilder<>(block->block);
 

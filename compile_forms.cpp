@@ -97,9 +97,40 @@ llvm::Value* compiler_define_form(compiler* compile, compile_block* block, point
 	return Ret;
 }
 
+llvm::Value* compiler_declare_form(compiler* compile, compile_block* block, pointer P)
+{
+	assert(block);
+	pointer Def = cadr(P);
+	llvm::Value* Ret = NULL;
+	symbol var_sym;
+	if(is_type(Def, DT_Pair))
+	{
+		var_sym = *get_symbol(pair_car(Def));
+		const char* fun_name = string_from_symbol(compile->sym_table, var_sym);
+		assert(is_type(caddr(P), DT_TypeInfo));
+		FunctionType* ft = FunctionType::get(typeinfo_get_llvm_type(caddr(P)), compiler_populate_param_types(cdr(Def)), false);
+		Function* f = Function::Create(ft, Function::ExternalLinkage, fun_name, compile->module);
+		Ret = f;
+		if(strcmp(f->getName().c_str(), fun_name) != 0)
+		{
+			f->eraseFromParent(); // Don't mess up on redeclerations.
+			Ret = compile->module->getFunction(fun_name);
+		}
+		
+	}
+	else
+	{
+		assert(false);
+	}
+
+	compiler_add_to_scope(block, var_sym, Ret);
+	return Ret;
+}
+
 void init_function_table(compiler* compile)
 {
-	compile->form_table[symbol_from_string(compile->sym_table, "Define")].special_form = compiler_define_form;
+	compile->form_table[symbol_from_string(compile->sym_table, "define")].special_form = compiler_define_form;
+	compile->form_table[symbol_from_string(compile->sym_table, "declare")].special_form = compiler_declare_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "+")].special_form = compiler_add_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "-")].special_form = compiler_sub_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "*")].special_form = compiler_mul_form;

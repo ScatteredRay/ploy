@@ -1,0 +1,12 @@
+Very Early, can compile though.
+
+Ploy only does the llvm assembly atm and outputs to out.ll.
+
+Compilation can be tested like so, with llvm in path.
+
+./ploy test.ply
+llvmc -clang out.ll
+./a.out
+
+the -clang option shouldn't be needed if gcc-llvm is installed.
+
