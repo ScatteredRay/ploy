@@ -26,9 +26,14 @@ pointer parser_error(parser* parse, const char* Error, ...)
 	return NIL;
 }
 
+bool is_newline(char c)
+{
+	return (c == '\r') || ( c == '\n');
+}
+
 bool is_whitespace(char c)
 {
-	return (c == ' ') || (c == '\t') || (c == '\r') || ( c == '\n');
+	return (c == ' ') || (c == '\t') || is_newline(c);
 }
 
 bool is_delimiter(char c)
@@ -258,6 +263,10 @@ pointer parse_expr(parser* parse)
 		ret_car = create_char(*(parse->curr++));
 		ret_cdr = parse_expr(parse);
 		return create_pair(ret_car, ret_cdr);
+	case ';':
+		while(!is_newline(*parse->curr))
+			parse->curr++;
+		return parse_expr(parse);
 	case 0:
 		return NIL;
 	default:
