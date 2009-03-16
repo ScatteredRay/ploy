@@ -97,6 +97,12 @@ llvm::Value* compiler_define_form(compiler* compile, compile_block* block, point
 	return Ret;
 }
 
+llvm::Value* compiler_typedef_form(compiler* compile, compile_block* block, pointer P)
+{
+	// typedefs are handled in a prior typing pass. just ignore them.
+	return NULL; // hopefully this won't break anything expecting a real value.
+}
+
 llvm::Value* compiler_declare_form(compiler* compile, compile_block* block, pointer P)
 {
 	assert(block);
@@ -131,6 +137,7 @@ void init_function_table(compiler* compile)
 {
 	compile->form_table[symbol_from_string(compile->sym_table, "define")].special_form = compiler_define_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "declare")].special_form = compiler_declare_form;
+	compile->form_table[symbol_from_string(compile->sym_table, "define-type")].special_form = compiler_typedef_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "+")].special_form = compiler_add_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "-")].special_form = compiler_sub_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "*")].special_form = compiler_mul_form;

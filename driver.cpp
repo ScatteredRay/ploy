@@ -5,6 +5,7 @@
 #include "compiler.h"
 #include "typeinfo.h"
 #include "stdio.h"
+#include <map>
 
 symbol_table* sym_tbl;
 
@@ -51,8 +52,9 @@ int main(int argc, const char** argv)
 	putchar('\n');
 
 	destroy_parser(parse);
-
-	transform_tree_gen_typeinfo(ret, tbl);
+	type_map type_define_map;
+	transform_tree_gen_typedef(ret, tbl, &type_define_map);
+	transform_tree_gen_typeinfo(ret, tbl, &type_define_map);
 
 	print_object(ret, tbl);
 	putchar('\n');

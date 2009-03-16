@@ -1,7 +1,9 @@
 (declare (div_add x :float y :float z :float) :float)
 
+(define-type mytype int)
+
 ; putchar from the c stdlib.
-(declare (putchar c :int) :int)
+(declare (putchar c :mytype) :int)
 
 (div_add 1.0 2.0 3.0)
 
@@ -25,4 +27,6 @@
 (putchar 10)
 
 (define (div_add x :float y :float z :float) :(float) (+ (/ x y) z))
+
+(define (testme x : (int 8)) : (int 8) x)
 
