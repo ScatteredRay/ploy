@@ -133,11 +133,46 @@ llvm::Value* compiler_declare_form(compiler* compile, compile_block* block, poin
 	return Ret;
 }
 
+llvm::Value* compiler_make_tuple_form(compiler* compile, compile_block* block, pointer P)
+{
+	assert(block);
+	std::vector<llvm::Value*> Params;
+	P = cdr(P);
+	while(P != NIL)
+	{
+		assert(is_type(P, DT_Pair));
+		Params.push_back(compiler_resolve_expression(compile, block, car(P)));
+		P = cdr(P);
+	}
+	
+	std::vector<const llvm::Type*> Types;
+	for(std::vector<llvm::Value*>::iterator it = Params.begin(); it != Params.end(); it++)
+		Types.push_back((*it)->getType());
+
+	llvm::Value* ret = llvm::UndefValue::get(llvm::StructType::get(Types, false));
+	unsigned int i = 0;
+	for(std::vector<llvm::Value*>::iterator it = Params.begin(); it != Params.end(); it++)
+		ret = block->builder.CreateInsertValue(ret, *it, i++);
+
+	return ret;
+}
+
+llvm::Value* compiler_index_form(compiler* compile, compile_block* block, pointer P)
+{
+	assert(block);
+	assert(is_type(P, DT_Pair) && is_type(cdr(P), DT_Pair) && is_type(cddr(P), DT_Pair));
+	assert(is_type(cadr(P), DT_Int));
+	llvm::Value* Record = compiler_resolve_expression(compile, block, caddr(P));
+	return block->builder.CreateExtractValue(Record, get_int(cadr(P)));
+}
+
 void init_function_table(compiler* compile)
 {
 	compile->form_table[symbol_from_string(compile->sym_table, "define")].special_form = compiler_define_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "declare")].special_form = compiler_declare_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "define-type")].special_form = compiler_typedef_form;
+	compile->form_table[symbol_from_string(compile->sym_table, "make-tuple")].special_form = compiler_make_tuple_form;
+	compile->form_table[symbol_from_string(compile->sym_table, "#")].special_form = compiler_index_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "+")].special_form = compiler_add_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "-")].special_form = compiler_sub_form;
 	compile->form_table[symbol_from_string(compile->sym_table, "*")].special_form = compiler_mul_form;

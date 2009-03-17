@@ -98,16 +98,41 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 			assert(false);
 		return make_primitive_typeinfo(llvm_T);
 	}
-	else if(pair_cdr(P) == NIL)
+	else if(is_type(pair_car(P), DT_Pair))
 	{
 		// Try to collapse
 		return eval_typeinfo(pair_car(P), tbl, type_define_map);
 	}
-	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "int") &&
-			is_type(cdr(P), DT_Pair) &&
-			is_type(cadr(P), DT_Int))
+	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "int"))
 	{
-		return make_primitive_typeinfo(llvm::IntegerType::get(get_int(cadr(P))));
+		//TODO: merge with other int code.
+		int bitlen = 32;
+		if(is_type(cdr(P), DT_Pair) &&
+		   is_type(cadr(P), DT_Int))
+			bitlen = get_int(cadr(P));
+
+		return make_primitive_typeinfo(llvm::IntegerType::get(bitlen));
+	}
+	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "tuple"))
+	{
+		std::vector<const llvm::Type*> Params;
+		std::vector<pointer> Pointers;
+		pointer Param = cdr(P);
+		while(Param != NIL)
+		{
+			assert(is_type(Param, DT_Pair));
+			pointer cP = eval_typeinfo(car(Param), tbl, type_define_map);
+			Params.push_back(typeinfo_get_llvm_type(cP));
+			destroy_list(cP);
+			Param = cdr(Param);
+		}
+
+		return make_primitive_typeinfo(llvm::StructType::get(Params, false));
+	}
+	else if(cdr(P) == NIL)
+	{
+		// Try to collapse
+		return eval_typeinfo(pair_car(P), tbl, type_define_map);
 	}
 	else
 		assert(false);

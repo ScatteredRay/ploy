@@ -33,3 +33,8 @@
 (putchar 0xFF)
 (putchar b010101)
 
+(define-type my-tuple (tuple int int))
+
+(define (test_tuple x :my-tuple) :int (+ (# 0 x) (# 1 x)))
+
+(test_tuple (make-tuple 3 4))

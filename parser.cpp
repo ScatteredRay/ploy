@@ -43,7 +43,7 @@ bool is_delimiter(char c)
 
 bool is_symbol_char(char c)
 {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || strchr("!$%&*+-./:<=>?@^_~", c);
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || strchr("!$%&*+-./:<=>?@^_~#", c);
 }
 
 bool is_number_char(char c)
