@@ -30,3 +30,6 @@
 
 (define (testme x : (int 8)) : (int 8) x)
 
+(putchar 0xFF)
+(putchar b010101)
+

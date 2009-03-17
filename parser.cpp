@@ -51,6 +51,11 @@ bool is_number_char(char c)
 	return (c >= '0' && c <= '9') || strchr(".+-", c);
 }
 
+bool is_extended_hex_char(char c)
+{
+	return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
 void eat_whitespace(parser* parse)
 {
 	while(is_whitespace(*parse->curr))
@@ -133,28 +138,55 @@ pointer parse_number(parser* parse)
 {
 	size_t len = 0;
 	bool isFloat = false;
+	bool isHex = false;
+	bool isBinary = false;
 	
 	const char* Start = parse->curr;
-
 
 	while(!is_delimiter(*parse->curr))
 	{
 		if(*parse->curr == '.')
 			isFloat = true;
-		if(is_number_char(*parse->curr))
+
+		if(is_number_char(*parse->curr) ||
+		   (isHex && is_extended_hex_char(*parse->curr)))
 			len++;
+		else if(len == 1 &&
+				*parse->curr == 'x' &&
+				*Start == '0')
+		{
+			len++;
+			isHex = true;
+		}
+		else if(len == 0 && *parse->curr == 'b')
+			isBinary = true;
 		else
 			return parser_error(parse, "Unexpected char '%c' in number literal.", *parse->curr);
 		parse->curr++;
 	}
 
-	char* buffer = new char[len+1];
-	
-	strncpy(buffer, Start, len);
-	buffer[len] = '\0';
+	{
+		int TotalIs = isHex + isBinary + isFloat;
+		if(TotalIs > true)
+		{
+			char* buffer = new char[len+1];
+			
+			strncpy(buffer, Start, len);
+			buffer[len] = '\0';
+			parser_error(parse, "Unexpected number literal: %s.", buffer);
+			delete buffer;
+			return NIL;
+
+		}
+	}
 
 	if(isFloat)
 	{
+		char* buffer = new char[len+1];
+	
+		strncpy(buffer, Start, len);
+		buffer[len] = '\0';
+
 		float ret = atof(buffer);
 		delete buffer;
 		
@@ -162,8 +194,14 @@ pointer parse_number(parser* parse)
 	}
 	else
 	{
-		int ret = atoi(buffer);
-		delete buffer;
+		// Might be smart to use a buffer here, in case strtol doesn't see all delimiters as we do.
+		int ret;
+		if(isHex)
+			ret  = strtol(Start + 2, NULL,  16);
+		else if(isBinary)
+			ret = strtol(Start + 1, NULL, 2);
+		else
+			ret = strtol(Start, NULL, 10);
 
 		return create_int(ret);
 	}
@@ -252,7 +290,7 @@ pointer parse_expr(parser* parse)
 	case ')':
 		parse->curr++;
 		return NIL;
-	case '+': case '-':
+	case '+': case '-': case 'b':
 		ret_car = parse_number_or_symbol(parse);
 		ret_cdr = parse_expr(parse);
 		return create_pair(ret_car, ret_cdr);
