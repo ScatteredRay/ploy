@@ -44,6 +44,15 @@ public:
 	}
 };
 
+class struct_typeinfo : primitive_typeinfo
+{
+	std::vector<const char*> Members; // References to symbol strings, don't need to manage the memory.
+public:
+	struct_typeinfo(std::vector<const char*>& Params, const llvm::Type* typ) : primitive_typeinfo(typ), Members(Params)
+	{}
+
+};
+
 typeinfo* get_typeinfo(pointer P)
 {
 	assert(is_type(P, DT_TypeInfo));
@@ -75,6 +84,15 @@ pointer make_primitive_typeinfo(const llvm::Type* llvm_T)
 	typeinfo* T = get_typeinfo(P);
 		
 	new(T) primitive_typeinfo(llvm_T);
+	return P;
+}
+
+pointer make_struct_typeinfo(std::vector<const char*>& ParamNames, std::vector<const llvm::Type*> ParamTypes)
+{
+	pointer P = ploy_alloc(get_type(DT_TypeInfo), sizeof(struct_typeinfo));
+	typeinfo* T = get_typeinfo(P);
+	
+	new(T) struct_typeinfo(ParamNames, llvm::StructType::get(ParamTypes, false));
 	return P;
 }
 
@@ -113,10 +131,10 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 
 		return make_primitive_typeinfo(llvm::IntegerType::get(bitlen));
 	}
+	// Composite types don't mantain proper non-llvm typeinfo of the members, as they just store members in the llvm type, FIXME.
 	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "tuple"))
 	{
 		std::vector<const llvm::Type*> Params;
-		std::vector<pointer> Pointers;
 		pointer Param = cdr(P);
 		while(Param != NIL)
 		{
@@ -128,6 +146,25 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 		}
 
 		return make_primitive_typeinfo(llvm::StructType::get(Params, false));
+	}
+	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "struct"))
+	{
+		std::vector<const llvm::Type*> Params;
+		std::vector<const char*> ParamNames;
+		pointer Param = cdr(P);
+		while(Param != NIL)
+		{
+			assert(is_type(Param, DT_Pair));
+			assert(is_type(car(Param), DT_Pair));
+			assert(is_type(caar(Param), DT_String));
+			
+			pointer cP = eval_typeinfo(cdar(Param), tbl, type_define_map);
+			Params.push_back(typeinfo_get_llvm_type(cP));
+			destroy_list(cP);
+			ParamNames.push_back(string_from_symbol(tbl, *get_symbol(caar(Param))));
+			Param = cdr(Param);
+		}
+		return make_struct_typeinfo(ParamNames, Params);
 	}
 	else if(cdr(P) == NIL)
 	{
