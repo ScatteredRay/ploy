@@ -40,9 +40,11 @@ struct compile_block
 	compiler_scope* current_scope;
 };
 
+typedef llvm::Value* (*form_compile_func)(compiler*, compile_block*, pointer);
+
 struct compiler_special_form
 {
-	llvm::Value* (*special_form)(compiler*, compile_block*, pointer);
+	form_compile_func special_form;
 	compiler_special_form()
 	{
 		special_form = NULL;

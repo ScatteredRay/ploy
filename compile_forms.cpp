@@ -166,15 +166,19 @@ llvm::Value* compiler_index_form(compiler* compile, compile_block* block, pointe
 	return block->builder.CreateExtractValue(Record, get_int(cadr(P)));
 }
 
+void declare_form(compiler* compile, const char* sym, form_compile_func cfunc)
+{
+	compile->form_table[symbol_from_string(compile->sym_table, sym)].special_form = cfunc;
+}
+
 void init_function_table(compiler* compile)
 {
-	compile->form_table[symbol_from_string(compile->sym_table, "define")].special_form = compiler_define_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "declare")].special_form = compiler_declare_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "define-type")].special_form = compiler_typedef_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "make-tuple")].special_form = compiler_make_tuple_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "#")].special_form = compiler_index_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "+")].special_form = compiler_add_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "-")].special_form = compiler_sub_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "*")].special_form = compiler_mul_form;
-	compile->form_table[symbol_from_string(compile->sym_table, "/")].special_form = compiler_div_form;
+	declare_form(compile, "define", compiler_define_form);
+	declare_form(compile, "declare", compiler_declare_form);
+	declare_form(compile, "define-type", compiler_typedef_form);
+	declare_form(compile, "make-tuple", compiler_make_tuple_form);
+	declare_form(compile, "#", compiler_index_form);
+	declare_form(compile, "+", compiler_add_form);
+	declare_form(compile, "*", compiler_mul_form);
+	declare_form(compile, "/", compiler_div_form);
 }
