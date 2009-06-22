@@ -20,7 +20,8 @@ enum dynamic_types
 	DT_Char = 5,
 	DT_TypeInfo = 6,
 	DT_Invalid = 7,
-	DT_Any = 8
+	DT_Any = 8,
+	DT_Static_Flag = 0x80000000
 };
 
 struct dynamic_type
@@ -35,7 +36,6 @@ struct pair
 	pointer _car;
 	pointer _cdr;
 };
-
 
 const dynamic_type* get_type(dynamic_types typeId);
 

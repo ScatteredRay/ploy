@@ -20,6 +20,29 @@ void destroy_compiler(compiler* compile)
 	delete compile;
 }
 
+void compiler_error(compiler* compile, const char* Error, ...)
+{
+	va_list ap;
+	va_start(ap, Error);
+	printf("Error: Compiling: ");
+	vprintf(Error, ap);
+	putc('\n', stdout);
+	va_end(ap);
+}
+
+void compiler_error(compiler* compile, pointer P, const char* Error, ...)
+{
+	va_list ap;
+	va_start(ap, Error);
+	printf("Error Compiling at:\n");
+	print_object(P, compile->sym_table);
+	printf("Error: ");
+	putc('\n', stdout);
+	vprintf(Error, ap);
+	putc('\n', stdout);
+	va_end(ap);
+}
+
 llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block, pointer P);
 llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* block, pointer P);
 
@@ -54,15 +77,14 @@ llvm::Value* compiler_find_in_scope(compile_block* block, symbol sym)
 	return NULL;
 }
 
-std::vector<const Type*> compiler_populate_param_types(pointer P)
+std::vector<const Type*> compiler_populate_param_types(compiler* compile, pointer P)
 {
 	std::vector<const Type*> ParamTypes;
 
 	while(P != NIL)
 	{
-		assert(is_type(P, DT_Pair));
-		assert(is_type(pair_car(P), DT_Symbol));
-		assert(is_type(cadr(P), DT_TypeInfo));
+		assert_cerror(is_type(P, DT_Pair) && is_type(pair_car(P), DT_Symbol) && is_type(cadr(P), DT_TypeInfo),
+					  compile, P, "Parameter list not well formed.");
 
 		ParamTypes.push_back(typeinfo_get_llvm_type(cadr(P)));
 		P = cddr(P);
@@ -74,7 +96,7 @@ std::vector<const Type*> compiler_populate_param_types(pointer P)
 compile_block* compiler_create_function_block(compiler* compile, const char* Name, const llvm::Type* RetType, pointer Params, compile_block* parent_block)
 {
 
-	std::vector<const Type*> ParamTypes = compiler_populate_param_types(Params);
+	std::vector<const Type*> ParamTypes = compiler_populate_param_types(compile, Params);
 
 	compile_block* block = new compile_block();
 
@@ -84,9 +106,9 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	Constant* c = compile->module->getFunction(Name);
 	if(c)
 	{
-		assert(isa<Function>(c));
+		assert_cerror(isa<Function>(c), compile, Params, "Constant '%s' already declared.", Name);
 		f = cast<Function>(c);
-		assert(f->arg_size() == ParamTypes.size());
+		assert_cerror(f->arg_size() == ParamTypes.size(), compile, Params, "Function '%s' already declared, mismatched params.", Name);
 	}
 	else
 		f  = Function::Create(ft, Function::ExternalLinkage, Name, compile->module);
@@ -105,9 +127,8 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	while(P != NIL)
 	{
 		Value* v = args++;
-		assert(is_type(P, DT_Pair));
-		assert(is_type(pair_car(P), DT_Symbol));
-		assert(is_type(cadr(P), DT_TypeInfo));
+		assert_cerror(is_type(P, DT_Pair) && is_type(pair_car(P), DT_Symbol) && is_type(cadr(P), DT_TypeInfo),
+					  compile, P, "Parameter list for function '%s' not well formed.", Name);
 
 		symbol S = *get_symbol(pair_car(P));
 		v->setName(string_from_symbol(compile->sym_table, S));
@@ -143,7 +164,8 @@ compile_block* compiler_init_module(compiler* compile)
 llvm::Value* compiler_resolve_variable(compiler* compile, compile_block* block, symbol S)
 {
 	Value* var = compiler_find_in_scope(block, S);
-	assert(var);
+	if(!var)
+		compiler_error(compile, "Undefined variable '%s'.", string_from_symbol(compile->sym_table, S));
 	return var;
 }
 
@@ -168,7 +190,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 		if(var && isa<Function>(var))
 			function = cast<Function>(var);
 		else
-			assert(false);
+			compiler_error(compile, P, "Function not defined.");
 
 		SmallVector<Value*, 4> Params;
 		P = pair_cdr(P);
@@ -187,7 +209,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 	{
 		// Resolve variables
 		Value* var = compiler_resolve_variable(compile, block, *get_symbol(P));
-		assert(var);
+		assert_cerror(var, compile, P, "Undefined variable");
 		return var;
 	}
 	case DT_Int:
@@ -201,7 +223,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 	case DT_Char:
 		return ConstantInt::get(APInt(8, get_char(P), false));
 	default:
-		assert(false);
+		compiler_error(compile, P, "Uncompilable expression in AST.");
 		break;
 	}
 

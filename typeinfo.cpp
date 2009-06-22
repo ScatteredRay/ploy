@@ -15,6 +15,8 @@ void set_cdr(pointer P, pointer V);
 void* get_value(pointer P);
 pointer ploy_alloc(const dynamic_type* type, size_t size);
 pointer ploy_alloc(const dynamic_type* type);
+pointer ploy_static_alloc(const dynamic_type* type, size_t size);
+pointer ploy_static_alloc(const dynamic_type* type);
 void ploy_free(pointer P);
 
 class typeinfo
@@ -84,6 +86,37 @@ pointer make_primitive_typeinfo(const llvm::Type* llvm_T)
 	typeinfo* T = get_typeinfo(P);
 		
 	new(T) primitive_typeinfo(llvm_T);
+	return P;
+}
+
+
+pointer get_int_typeinfo()
+{
+	static pointer P = NULL;
+
+	if(!P)
+	{
+		P = ploy_static_alloc(get_type(DT_TypeInfo), sizeof(primitive_typeinfo));
+		typeinfo* T = get_typeinfo(P);
+		
+		new(T) primitive_typeinfo(llvm::Type::Int32Ty);
+	}
+
+	return P;
+}
+
+pointer get_float_typeinfo()
+{
+	static pointer P = NULL;
+
+	if(!P)
+	{
+		P = ploy_static_alloc(get_type(DT_TypeInfo), sizeof(primitive_typeinfo));
+		typeinfo* T = get_typeinfo(P);
+		
+		new(T) primitive_typeinfo(llvm::Type::FloatTy);
+	}
+
 	return P;
 }
 

@@ -39,12 +39,12 @@
 
 (test_tuple (make-tuple 3 4))
 
-(define-type my-struct (struct
-						(x int)
-						(y int)))
+;;(define-type my-struct (struct
+;;						(x int)
+;;	 					(y int)))
 
-(define (test_struct x :my-struct) :int
-  (+ (# x x :my-struct) (# y x :my-struct)))
+;;(define (test_struct x :my-struct) :int
+;;  (+ (# x x :my-struct) (# y x :my-struct)))
 
 ;; (define-struct my-struct
 ;;   (x int)

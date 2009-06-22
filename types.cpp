@@ -48,8 +48,22 @@ pointer ploy_alloc(const dynamic_type* type)
 	return ploy_alloc(type, invalid_size);
 }
 
+pointer ploy_static_alloc(const dynamic_type* type, size_t size)
+{
+	pointer P = ploy_alloc(type, size);
+	*((dynamic_types*)P) = (dynamic_types)(type->Id | DT_Static_Flag);
+	return P;
+}
+
+pointer ploy_static_alloc(const dynamic_type* type)
+{
+	return ploy_static_alloc(type, invalid_size);
+}
+
 void ploy_free(pointer P)
 {
+	if(*(dynamic_types*)P & DT_Static_Flag)
+		return; // Abort free for static objects.
 	const dynamic_type* T = get_type(get_type_id(P));
 	if(T->finish)
 		T->finish(P);
@@ -58,7 +72,7 @@ void ploy_free(pointer P)
 
 dynamic_types get_type_id(pointer P)
 {
-	return *(dynamic_types*)P;
+	return (dynamic_types)((*(dynamic_types*)P) & ~DT_Static_Flag);
 }
 
 bool is_type(pointer P, dynamic_types type)

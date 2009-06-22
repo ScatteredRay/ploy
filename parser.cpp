@@ -302,7 +302,7 @@ pointer parse_expr(parser* parse)
 		ret_cdr = parse_expr(parse);
 		return create_pair(ret_car, ret_cdr);
 	case ';':
-		while(!is_newline(*parse->curr))
+		while(!is_newline(*parse->curr) && *parse->curr != '\0')
 			parse->curr++;
 		return parse_expr(parse);
 	case 0:
