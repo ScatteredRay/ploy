@@ -15,6 +15,7 @@ typedef std::map<symbol, pointer, sym_cmp> type_map;
 namespace llvm
 {
 	class Type;
+    class LLVMContext;
 }
 
 void print_typeinfo(pointer P, symbol_table* tbl, FILE* out);
@@ -25,8 +26,8 @@ void transform_tree_gen_typedef(pointer P, symbol_table* tbl, type_map* type_def
 void transform_tree_gen_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map);
 
 typeinfo* get_typeinfo(pointer P);
-pointer get_int_typeinfo();
-pointer get_float_typeinfo();
+pointer get_int_typeinfo(llvm::LLVMContext&);
+pointer get_float_typeinfo(llvm::LLVMContext&);
 
 
 #endif //_TYPEINFO_H_

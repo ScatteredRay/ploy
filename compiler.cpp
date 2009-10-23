@@ -3,6 +3,8 @@
 #include "typeinfo.h"
 #include <stdint.h>
 #include <llvm/CodeGen/FileWriters.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/raw_os_ostream.h>
 #include <fstream>
 
 using namespace llvm;
@@ -100,6 +102,15 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 
 	compile_block* block = new compile_block();
 
+    LLVMContext* Context;
+    if(parent_block)
+        Context = &parent_block->function->getContext();
+    else
+        Context = &compile->module->getContext();
+
+    if(!RetType)
+        RetType = llvm::Type::getVoidTy(*Context);
+
 	FunctionType* ft = FunctionType::get(RetType, ParamTypes, false);
 	
 	Function* f;
@@ -137,8 +148,8 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	}
 
 	f->deleteBody();
-	block->block = BasicBlock::Create("entry", block->function);
-	block->builder = IRBuilder<>(block->block);
+	block->block = BasicBlock::Create(*Context, "entry", block->function);
+	block->builder = new IRBuilder<>(block->block);
 
 	block->last_exp = NULL;
 
@@ -151,12 +162,13 @@ void compiler_destroy_function_block(compile_block* block)
 {
 	// llvm should maintain it's own types, we just want to get rid of the block we pass around to build it.
 	compiler_destroy_scope(block->current_scope);
+    delete block->builder;
 	delete block;
 }
 
 compile_block* compiler_init_module(compiler* compile)
 {
-	compile->module = new Module("");
+	compile->module = new Module("", getGlobalContext());
 
 	return compiler_create_function_block(compile, "main");
 }
@@ -203,7 +215,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 				P = NIL;
 		}
 		
-		return block->builder.CreateCall(function, Params.begin(), Params.end());
+		return block->builder->CreateCall(function, Params.begin(), Params.end());
 	}
 	case DT_Symbol:
 	{
@@ -213,15 +225,15 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 		return var;
 	}
 	case DT_Int:
-		return ConstantInt::get(APInt(32, get_int(P), true));
+		return ConstantInt::get(Type::getInt32Ty(block->function->getContext()), APInt(32, get_int(P), true));
 	case DT_Real:
-		return ConstantFP::get(APFloat(get_real(P)));
+		return ConstantFP::get(block->function->getContext(), APFloat(get_real(P)));
 	case DT_String:
 		//TODO: Needs Implementation
 		assert(false);
 		break;
 	case DT_Char:
-		return ConstantInt::get(APInt(8, get_char(P), false));
+		return ConstantInt::get(Type::getInt8Ty(block->function->getContext()), APInt(8, get_char(P), false));
 	default:
 		compiler_error(compile, P, "Uncompilable expression in AST.");
 		break;
@@ -251,7 +263,7 @@ void compiler_compile_expression(compiler* compile, pointer P)
 	compile_block* block = compiler_init_module(compile);
 
 	compiler_resolve_expression_list(compile, block, P);
-	block->builder.CreateRetVoid();
+	block->builder->CreateRetVoid();
 
 	compiler_destroy_function_block(block);
 

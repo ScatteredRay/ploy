@@ -74,7 +74,7 @@ void destroy_symbol_table(symbol_table* tbl)
 
 void resize_symbol_table(symbol_table* tbl, size_t additional_needed)
 {
-	size_t NewMax = tbl->MaxSymbols * 2, ;
+	size_t NewMax = tbl->MaxSymbols * 2;
 	if(NewMax < tbl->MaxSymbols + additional_needed)
 		NewMax = tbl->MaxSymbols + additional_needed;
 	

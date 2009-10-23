@@ -35,7 +35,7 @@ struct compile_block
 {
 	llvm::Function* function;
 	llvm::BasicBlock* block;
-	llvm::IRBuilder<> builder;
+	llvm::IRBuilder<>* builder;
 	llvm::Value* last_exp;
 	compiler_scope* current_scope;
 };
@@ -68,7 +68,7 @@ void compiler_error(compiler* compile, pointer P, const char* Error, ...);
 #define assert_cerror(pred, compile, P, error, args...)	\
 	if(pred) compiler_error(compile, P, error , ## args);
 
-compile_block* compiler_create_function_block(compiler* compile, const char* Name="", const llvm::Type* RetType = llvm::Type::VoidTy, pointer Params=NIL, compile_block* parent_block = NULL);
+compile_block* compiler_create_function_block(compiler* compile, const char* Name="", const llvm::Type* RetType = NULL, pointer Params=NIL, compile_block* parent_block = NULL);
 void compiler_destroy_function_block(compile_block* block);
 void compiler_add_to_scope(compile_block* block, symbol sym, llvm::Value* val);
 llvm::Value* compiler_find_in_scope(compile_block* block, symbol sym);

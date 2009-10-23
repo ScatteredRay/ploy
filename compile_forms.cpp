@@ -31,7 +31,7 @@ llvm::Value* compiler_resolve_list_op(compiler* compile, compile_block* block, p
 
 llvm::Value* combine_bin_op(compile_block* block, llvm::Value* lhv, llvm::Value* rhv, void* UP)
 {
-	return block->builder.CreateBinOp(*(Instruction::BinaryOps*)UP, lhv, rhv);
+	return block->builder->CreateBinOp(*(Instruction::BinaryOps*)UP, lhv, rhv);
 }
 
 llvm::Value* compiler_resolve_bin_op(compiler* compile, compile_block* block, pointer P, Instruction::BinaryOps binop)
@@ -57,9 +57,9 @@ llvm::Value* compiler_mul_form(compiler* compile, compile_block* block, pointer 
 llvm::Value* combine_div_op(compile_block* block, llvm::Value* lhv, llvm::Value* rhv, void* UP)
 {
 	if(lhv->getType()->isIntOrIntVector() && rhv->getType()->isIntOrIntVector())
-		return block->builder.CreateBinOp(Instruction::SDiv, lhv, rhv);
+		return block->builder->CreateBinOp(Instruction::SDiv, lhv, rhv);
 	else if(lhv->getType()->isFPOrFPVector() && rhv->getType()->isFPOrFPVector())
-		return block->builder.CreateBinOp(Instruction::FDiv, lhv, rhv);
+		return block->builder->CreateBinOp(Instruction::FDiv, lhv, rhv);
 	else
 		assert(false);
 }
@@ -83,7 +83,7 @@ llvm::Value* compiler_define_form(compiler* compile, compile_block* block, point
 		assert(is_type(caddr(P), DT_TypeInfo));
 		compile_block* FunctionBlock = compiler_create_function_block(compile, fun_name, typeinfo_get_llvm_type(caddr(P)), pair_cdr(Def), block);
 		compiler_resolve_expression_list(compile, FunctionBlock, cdddr(P));
-		FunctionBlock->builder.CreateRet(FunctionBlock->last_exp);
+		FunctionBlock->builder->CreateRet(FunctionBlock->last_exp);
 		Ret = FunctionBlock->function;
 		compiler_destroy_function_block(FunctionBlock);
 	}
@@ -117,7 +117,7 @@ llvm::Value* compiler_declare_form(compiler* compile, compile_block* block, poin
 		FunctionType* ft = FunctionType::get(typeinfo_get_llvm_type(caddr(P)), compiler_populate_param_types(compile, cdr(Def)), false);
 		Function* f = Function::Create(ft, Function::ExternalLinkage, fun_name, compile->module);
 		Ret = f;
-		if(strcmp(f->getName().c_str(), fun_name) != 0)
+		if(strcmp(f->getNameStr().c_str(), fun_name) != 0)
 		{
 			f->eraseFromParent(); // Don't mess up on redeclerations.
 			Ret = compile->module->getFunction(fun_name);
@@ -149,10 +149,10 @@ llvm::Value* compiler_make_tuple_form(compiler* compile, compile_block* block, p
 	for(std::vector<llvm::Value*>::iterator it = Params.begin(); it != Params.end(); it++)
 		Types.push_back((*it)->getType());
 
-	llvm::Value* ret = llvm::UndefValue::get(llvm::StructType::get(Types, false));
+	llvm::Value* ret = llvm::UndefValue::get(llvm::StructType::get(llvm::getGlobalContext(), Types, false));
 	unsigned int i = 0;
 	for(std::vector<llvm::Value*>::iterator it = Params.begin(); it != Params.end(); it++)
-		ret = block->builder.CreateInsertValue(ret, *it, i++);
+		ret = block->builder->CreateInsertValue(ret, *it, i++);
 
 	return ret;
 }
@@ -163,7 +163,7 @@ llvm::Value* compiler_index_form(compiler* compile, compile_block* block, pointe
 	assert(is_type(P, DT_Pair) && is_type(cdr(P), DT_Pair) && is_type(cddr(P), DT_Pair));
 	assert(is_type(cadr(P), DT_Int));
 	llvm::Value* Record = compiler_resolve_expression(compile, block, caddr(P));
-	return block->builder.CreateExtractValue(Record, get_int(cadr(P)));
+	return block->builder->CreateExtractValue(Record, get_int(cadr(P)));
 }
 
 void declare_form(compiler* compile, const char* sym, form_compile_func cfunc)

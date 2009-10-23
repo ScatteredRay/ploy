@@ -7,7 +7,9 @@
 #include <assert.h>
 #include <sstream>
 #include <llvm/Type.h>
+#include <llvm/LLVMContext.h>
 #include <llvm/DerivedTypes.h>
+#include <llvm/Support/raw_os_ostream.h>
 
 // internal types classes.
 void set_car(pointer P, pointer V);
@@ -40,9 +42,10 @@ public:
 	}
 	virtual void print_description(FILE* out)
 	{
-		std::ostringstream desc;
+		std::ostringstream std_desc;
+        llvm::raw_os_ostream desc(std_desc);
 		llvm_type->print(desc);
-		fputs(desc.str().c_str(), out);
+		fputs(std_desc.str().c_str(), out);
 	}
 };
 
@@ -90,7 +93,7 @@ pointer make_primitive_typeinfo(const llvm::Type* llvm_T)
 }
 
 
-pointer get_int_typeinfo()
+pointer get_int_typeinfo(llvm::LLVMContext& Context)
 {
 	static pointer P = NULL;
 
@@ -99,13 +102,13 @@ pointer get_int_typeinfo()
 		P = ploy_static_alloc(get_type(DT_TypeInfo), sizeof(primitive_typeinfo));
 		typeinfo* T = get_typeinfo(P);
 		
-		new(T) primitive_typeinfo(llvm::Type::Int32Ty);
+		new(T) primitive_typeinfo(llvm::Type::getInt32Ty(Context));
 	}
 
 	return P;
 }
 
-pointer get_float_typeinfo()
+pointer get_float_typeinfo(llvm::LLVMContext& Context)
 {
 	static pointer P = NULL;
 
@@ -114,18 +117,18 @@ pointer get_float_typeinfo()
 		P = ploy_static_alloc(get_type(DT_TypeInfo), sizeof(primitive_typeinfo));
 		typeinfo* T = get_typeinfo(P);
 		
-		new(T) primitive_typeinfo(llvm::Type::FloatTy);
+		new(T) primitive_typeinfo(llvm::Type::getFloatTy(Context));
 	}
 
 	return P;
 }
 
-pointer make_struct_typeinfo(std::vector<const char*>& ParamNames, std::vector<const llvm::Type*> ParamTypes)
+pointer make_struct_typeinfo(llvm::LLVMContext& Context, std::vector<const char*>& ParamNames, std::vector<const llvm::Type*> ParamTypes)
 {
 	pointer P = ploy_alloc(get_type(DT_TypeInfo), sizeof(struct_typeinfo));
 	typeinfo* T = get_typeinfo(P);
 	
-	new(T) struct_typeinfo(ParamNames, llvm::StructType::get(ParamTypes, false));
+	new(T) struct_typeinfo(ParamNames, llvm::StructType::get(Context, ParamTypes, false));
 	return P;
 }
 
@@ -142,9 +145,9 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 
 		const llvm::Type* llvm_T;
 		if(S == symbol_from_string(tbl, "int"))
-			llvm_T = llvm::Type::Int32Ty;
+			llvm_T = llvm::Type::getInt32Ty(llvm::getGlobalContext());
 		else if(S == symbol_from_string(tbl, "float"))
-			llvm_T = llvm::Type::FloatTy;
+			llvm_T = llvm::Type::getFloatTy(llvm::getGlobalContext());
 		else
 			assert(false);
 		return make_primitive_typeinfo(llvm_T);
@@ -162,7 +165,7 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 		   is_type(cadr(P), DT_Int))
 			bitlen = get_int(cadr(P));
 
-		return make_primitive_typeinfo(llvm::IntegerType::get(bitlen));
+		return make_primitive_typeinfo(llvm::IntegerType::get(llvm::getGlobalContext(), bitlen));
 	}
 	// Composite types don't mantain proper non-llvm typeinfo of the members, as they just store members in the llvm type, FIXME.
 	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "tuple"))
@@ -178,7 +181,7 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 			Param = cdr(Param);
 		}
 
-		return make_primitive_typeinfo(llvm::StructType::get(Params, false));
+		return make_primitive_typeinfo(llvm::StructType::get(llvm::getGlobalContext(), Params, false));
 	}
 	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "struct"))
 	{
@@ -197,7 +200,7 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 			ParamNames.push_back(string_from_symbol(tbl, *get_symbol(caar(Param))));
 			Param = cdr(Param);
 		}
-		return make_struct_typeinfo(ParamNames, Params);
+		return make_struct_typeinfo(llvm::getGlobalContext(), ParamNames, Params);
 	}
 	else if(cdr(P) == NIL)
 	{

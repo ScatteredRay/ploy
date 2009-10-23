@@ -1,9 +1,10 @@
 LINK = g++ ;
+LLVMDIR = /Users/Indy/local/llvm ;
 DEBUGGING_SYMBOLS = YES ;
-LLVMLIBS = ../llvm/Debug/lib/ ;
+LLVMLIBS = $(LLVMDIR)/lib/ ;
 LINKFLAGS = -g -L$(LLVMLIBS) ;
 LINKLIBS = -lLLVMCore -lLLVMCodeGen -lLLVMSystem -lLLVMSupport ;
 C++FLAGS = -g ;
-HDRS = ../llvm/include/ ;
+HDRS = $(LLVMDIR)/include/ ;
 
 Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp ;
