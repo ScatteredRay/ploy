@@ -25,7 +25,6 @@ llvm::Value* compiler_resolve_list_op(compiler* compile, compile_block* block, p
 		else
 			P = NIL;
 	}
-	block->last_exp = lhv;
 	return lhv;
 }
 
@@ -82,8 +81,8 @@ llvm::Value* compiler_define_form(compiler* compile, compile_block* block, point
 		const char* fun_name = string_from_symbol(compile->sym_table, var_sym);
 		assert(is_type(caddr(P), DT_TypeInfo));
 		compile_block* FunctionBlock = compiler_create_function_block(compile, fun_name, typeinfo_get_llvm_type(caddr(P)), pair_cdr(Def), block);
-		compiler_resolve_expression_list(compile, FunctionBlock, cdddr(P));
-		FunctionBlock->builder->CreateRet(FunctionBlock->last_exp);
+        llvm::Value* LastExp = compiler_resolve_expression_list(compile, FunctionBlock, cdddr(P));
+		FunctionBlock->builder->CreateRet(LastExp);
 		Ret = FunctionBlock->function;
 		compiler_destroy_function_block(FunctionBlock);
 	}

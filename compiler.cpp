@@ -151,8 +151,6 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	block->block = BasicBlock::Create(*Context, "entry", block->function);
 	block->builder = new IRBuilder<>(block->block);
 
-	block->last_exp = NULL;
-
 	return block;
 
 	
