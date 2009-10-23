@@ -38,7 +38,7 @@ void compiler_error(compiler* compile, pointer P, const char* Error, ...)
 	va_start(ap, Error);
 	printf("Error Compiling at:\n");
 	print_object(P, compile->sym_table);
-	printf("Error: ");
+	printf("\nError: ");
 	putc('\n', stdout);
 	vprintf(Error, ap);
 	putc('\n', stdout);
