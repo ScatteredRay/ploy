@@ -132,8 +132,12 @@ pointer make_struct_typeinfo(llvm::LLVMContext& Context, std::vector<const char*
 	return P;
 }
 
+
 pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 {
+    // Consider moving llvm type selection into another function,
+    // and just doing a quick wrap into a typeinfo here.
+    // This would simplify the recursive stuff.
 	if(!is_type(P, DT_Pair))
 	{
 		// Either an alias or a primitive.
@@ -148,6 +152,10 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 			llvm_T = llvm::Type::getInt32Ty(llvm::getGlobalContext());
 		else if(S == symbol_from_string(tbl, "float"))
 			llvm_T = llvm::Type::getFloatTy(llvm::getGlobalContext());
+        // TODO: move to std library as a typedef.
+        else if(S == symbol_from_string(tbl, "string"))
+            llvm_T = llvm::PointerType::getUnqual(
+                llvm::Type::getInt8Ty(llvm::getGlobalContext()));
 		else
 			assert(false);
 		return make_primitive_typeinfo(llvm_T);
@@ -165,9 +173,24 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 		   is_type(cadr(P), DT_Int))
 			bitlen = get_int(cadr(P));
 
+        // Should be a compiler error, need to move the error funcs somewhere.
+        assert(!is_type(cdr(P), DT_Pair) ||
+               is_type(cadr(P), DT_Int)
+               && "Bad Type declaration!");
+
 		return make_primitive_typeinfo(llvm::IntegerType::get(llvm::getGlobalContext(), bitlen));
 	}
+    else if(*get_symbol(car(P)) == symbol_from_string(tbl, "pointer"))
+    {
+        pointer cP = eval_typeinfo(cdr(P), tbl, type_define_map);
+        pointer Ret =
+            make_primitive_typeinfo(
+                llvm::PointerType::getUnqual(typeinfo_get_llvm_type(cP)));
+        destroy_list(cP);
+        return Ret;
+    }
 	// Composite types don't mantain proper non-llvm typeinfo of the members, as they just store members in the llvm type, FIXME.
+    // Likely to move more powerful type info somewhere else, in which case this is fine.
 	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "tuple"))
 	{
 		std::vector<const llvm::Type*> Params;

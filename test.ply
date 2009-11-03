@@ -33,7 +33,9 @@
 (putchar 0xFF)
 (putchar b010101)
 
-"Hello World"
+(define (test-string x : string) : (pointer (int 8)) x)
+
+;;(test-string "Hello World")
 
 (define-type my-tuple (tuple int int))
 
