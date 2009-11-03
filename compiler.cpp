@@ -227,9 +227,27 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 	case DT_Real:
 		return ConstantFP::get(block->function->getContext(), APFloat(get_real(P)));
 	case DT_String:
-		//TODO: Needs Implementation
-		assert(false);
-		break;
+    {
+        // The Parser currentlly only supports ASCII, but use UTF-8.
+        const char* Curr = get_string(P);
+        size_t strlength = strlen(Curr);
+        std::vector<Constant*> StringList;
+        StringList.reserve(strlength+1);
+        do
+        {
+            // TODO: Either convert from extended ascii to UTF-8, or use UTF-8 all through
+            // the parser.40
+            assert(*Curr >= 0 && "Conversion from extended ascii and UTF-8 not supported");
+            StringList.push_back(
+                ConstantInt::get(Type::getInt8Ty(block->function->getContext()), (uint64_t)*Curr, false));
+        }
+        while(*(Curr++) != '\0');
+
+        return ConstantArray::get(
+            ArrayType::get(Type::getInt8Ty(block->function->getContext()),
+                           StringList.size()),
+            StringList);
+    }
 	case DT_Char:
 		return ConstantInt::get(Type::getInt8Ty(block->function->getContext()), APInt(8, get_char(P), false));
 	default:
