@@ -36,7 +36,6 @@ struct compile_block
 	llvm::Function* function;
 	llvm::BasicBlock* block;
 	llvm::IRBuilder<>* builder;
-	llvm::Value* last_exp;
 	compiler_scope* current_scope;
 };
 
