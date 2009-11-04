@@ -243,10 +243,27 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
         }
         while(*(Curr++) != '\0');
 
-        return ConstantArray::get(
-            ArrayType::get(Type::getInt8Ty(block->function->getContext()),
-                           StringList.size()),
+        llvm::ArrayType* ArrType = ArrayType::get(Type::getInt8Ty(block->function->getContext()),
+                                               StringList.size());
+
+        Constant* Arr = ConstantArray::get(
+            ArrType,
             StringList);
+        
+        GlobalVariable* gv = new GlobalVariable(*compile->module,
+                                                ArrType,
+                                                true,
+                                                GlobalValue::InternalLinkage,
+                                                Arr,
+                                                llvm::Twine(""),
+                                                0,
+                                                false);
+
+        llvm::Value* V = block->builder->CreateConstInBoundsGEP2_64(gv, 0, 0);
+        
+        V->getType()->dump();
+
+        return V;
     }
 	case DT_Char:
 		return ConstantInt::get(Type::getInt8Ty(block->function->getContext()), APInt(8, get_char(P), false));
