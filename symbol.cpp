@@ -33,6 +33,7 @@ symbol_node* create_symbol_node(char C)
 	node->Next = NULL;
 	node->Child = NULL;
 	node->symbol_id = invalid_symbol;
+    return node;
 }
 
 // does not remove the symbol from the id table.
@@ -52,6 +53,7 @@ symbol_table* init_symbol_table()
 	tbl->Symbols = (char**)malloc(sizeof(char*) * initial_symbol_table_size);
 	tbl->NumSymbols = 0;
 	tbl->MaxSymbols = initial_symbol_table_size;
+    return tbl;
 }
 
 void destroy_symbol_table(symbol_table* tbl)
