@@ -33,6 +33,8 @@ symbol_node* create_symbol_node(char C)
 	node->Next = NULL;
 	node->Child = NULL;
 	node->symbol_id = invalid_symbol;
+
+    return node;
 }
 
 // does not remove the symbol from the id table.
