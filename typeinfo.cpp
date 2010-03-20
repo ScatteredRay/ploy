@@ -4,6 +4,7 @@
 #include "typeinfo.h"
 #include "types.h"
 #include "symbol.h"
+#include "error.h"
 #include <assert.h>
 #include <sstream>
 #include <llvm/Type.h>
@@ -141,7 +142,7 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
 	if(!is_type(P, DT_Pair))
 	{
 		// Either an alias or a primitive.
-		assert(is_type(P, DT_Symbol));
+		assert_cerror(is_type(P, DT_Symbol), P, "Expecting type symbol or typelist after ':'.");
 		symbol S = *get_symbol(P);
 		std::map<symbol, pointer>::iterator it = type_define_map->find(S);
 		if(it != type_define_map->end())
@@ -156,13 +157,23 @@ pointer eval_typeinfo(pointer P, symbol_table* tbl, type_map* type_define_map)
         else if(S == symbol_from_string(tbl, "string"))
             llvm_T = llvm::PointerType::getUnqual(
                 llvm::Type::getInt8Ty(llvm::getGlobalContext()));
+        else if(S == symbol_from_string(tbl, "pointer"))
+            llvm_T = llvm::PointerType::getUnqual(
+                llvm::Type::getInt8Ty(llvm::getGlobalContext()));
+        else if(S == symbol_from_string(tbl, "void"))
+            llvm_T = llvm::Type::getVoidTy(llvm::getGlobalContext());
 		else
-			assert(false);
+            compiler_error(P, "Unrecgonized primitive type.");
 		return make_primitive_typeinfo(llvm_T);
 	}
+    else if(pair_cdr(P) == NIL)
+    {
+        // Single element list treat it as the first element.
+        return eval_typeinfo(pair_car(P), tbl, type_define_map);
+    }
 	else if(is_type(pair_car(P), DT_Pair))
 	{
-		// Try to collapse
+		// Try to collapse.
 		return eval_typeinfo(pair_car(P), tbl, type_define_map);
 	}
 	else if(*get_symbol(car(P)) == symbol_from_string(tbl, "int"))

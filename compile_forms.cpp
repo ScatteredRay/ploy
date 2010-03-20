@@ -113,7 +113,9 @@ llvm::Value* compiler_declare_form(compiler* compile, compile_block* block, poin
 	{
 		var_sym = *get_symbol(pair_car(Def));
 		const char* fun_name = string_from_symbol(compile->sym_table, var_sym);
-		assert(is_type(caddr(P), DT_TypeInfo));
+        // Should we assume default void return?
+        assert_cerror(is_type(cddr(P), DT_Pair), P, "Missing return type.");
+		assert_cerror(is_type(caddr(P), DT_TypeInfo), P, "Expecting return type.");
 		FunctionType* ft = FunctionType::get(typeinfo_get_llvm_type(caddr(P)), compiler_populate_param_types(compile, cdr(Def)), false);
 		Function* f = Function::Create(ft, Function::ExternalLinkage, fun_name, compile->module);
 		Ret = f;
@@ -126,7 +128,7 @@ llvm::Value* compiler_declare_form(compiler* compile, compile_block* block, poin
 	}
 	else
 	{
-		assert(false);
+        compiler_error(Def, "declare form missing function decleration, perhaps missing '(' - ')'.");
 	}
 
 	compiler_add_to_scope(block, var_sym, Ret);
