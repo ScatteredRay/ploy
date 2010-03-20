@@ -1,6 +1,7 @@
 #include "compiler_private.h"
 #include "types.h"
 #include "typeinfo.h"
+#include "error.h"
 #include <stdint.h>
 
 using namespace llvm;

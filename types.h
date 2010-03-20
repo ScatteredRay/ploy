@@ -50,6 +50,8 @@ pointer create_char(char c);
 pointer create_string(const char* str);
 pointer create_string(const char* str, size_t len);
 
+pointer alloc_string(size_t len);
+
 bool is_type(pointer P, dynamic_types type);
 dynamic_types get_type_id(pointer P);
 
@@ -64,7 +66,6 @@ float get_real(pointer P);
 char get_char(pointer P);
 char* get_string_ref(pointer P);
 const char* get_string(pointer P);
-pointer alloc_string(size_t len);
 
 void print_object(pointer P, symbol_table* table);
 

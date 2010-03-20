@@ -1,6 +1,7 @@
 #include "compiler_private.h"
 #include "types.h"
 #include "typeinfo.h"
+#include "error.h"
 #include <stdint.h>
 #include <llvm/CodeGen/FileWriters.h>
 #include <llvm/Support/raw_ostream.h>
@@ -8,6 +9,8 @@
 #include <fstream>
 
 using namespace llvm;
+
+extern symbol_table* sym_tbl;
 
 compiler* init_compiler(symbol_table* table)
 {
@@ -22,7 +25,7 @@ void destroy_compiler(compiler* compile)
 	delete compile;
 }
 
-void compiler_error(compiler* compile, const char* Error, ...)
+void compiler_error(const char* Error, ...)
 {
 	va_list ap;
 	va_start(ap, Error);
@@ -32,12 +35,12 @@ void compiler_error(compiler* compile, const char* Error, ...)
 	va_end(ap);
 }
 
-void compiler_error(compiler* compile, pointer P, const char* Error, ...)
+void compiler_error(pointer P, const char* Error, ...)
 {
 	va_list ap;
 	va_start(ap, Error);
 	printf("Error Compiling at:\n");
-	print_object(P, compile->sym_table);
+	print_object(P, sym_tbl);
 	printf("\nError: ");
 	putc('\n', stdout);
 	vprintf(Error, ap);
@@ -86,7 +89,7 @@ std::vector<const Type*> compiler_populate_param_types(compiler* compile, pointe
 	while(P != NIL)
 	{
 		assert_cerror(is_type(P, DT_Pair) && is_type(pair_car(P), DT_Symbol) && is_type(cadr(P), DT_TypeInfo),
-					  compile, P, "Parameter list not well formed.");
+					  P, "Parameter list not well formed.");
 
 		ParamTypes.push_back(typeinfo_get_llvm_type(cadr(P)));
 		P = cddr(P);
@@ -117,9 +120,9 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	Constant* c = compile->module->getFunction(Name);
 	if(c)
 	{
-		assert_cerror(isa<Function>(c), compile, Params, "Constant '%s' already declared.", Name);
+		assert_cerror(isa<Function>(c), Params, "Constant '%s' already declared.", Name);
 		f = cast<Function>(c);
-		assert_cerror(f->arg_size() == ParamTypes.size(), compile, Params, "Function '%s' already declared, mismatched params.", Name);
+		assert_cerror(f->arg_size() == ParamTypes.size(), Params, "Function '%s' already declared, mismatched params.", Name);
 	}
 	else
 		f  = Function::Create(ft, Function::ExternalLinkage, Name, compile->module);
@@ -139,7 +142,7 @@ compile_block* compiler_create_function_block(compiler* compile, const char* Nam
 	{
 		Value* v = args++;
 		assert_cerror(is_type(P, DT_Pair) && is_type(pair_car(P), DT_Symbol) && is_type(cadr(P), DT_TypeInfo),
-					  compile, P, "Parameter list for function '%s' not well formed.", Name);
+					  P, "Parameter list for function '%s' not well formed.", Name);
 
 		symbol S = *get_symbol(pair_car(P));
 		v->setName(string_from_symbol(compile->sym_table, S));
@@ -175,7 +178,7 @@ llvm::Value* compiler_resolve_variable(compiler* compile, compile_block* block, 
 {
 	Value* var = compiler_find_in_scope(block, S);
 	if(!var)
-		compiler_error(compile, "Undefined variable '%s'.", string_from_symbol(compile->sym_table, S));
+		compiler_error("Undefined variable '%s'.", string_from_symbol(compile->sym_table, S));
 	return var;
 }
 
@@ -200,7 +203,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 		if(var && isa<Function>(var))
 			function = cast<Function>(var);
 		else
-			compiler_error(compile, P, "Function not defined.");
+			compiler_error(P, "Function not defined.");
 
 		SmallVector<Value*, 4> Params;
 		P = pair_cdr(P);
@@ -219,7 +222,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 	{
 		// Resolve variables
 		Value* var = compiler_resolve_variable(compile, block, *get_symbol(P));
-		assert_cerror(var, compile, P, "Undefined variable");
+		assert_cerror(var, P, "Undefined variable");
 		return var;
 	}
 	case DT_Int:
@@ -268,7 +271,7 @@ llvm::Value* compiler_resolve_expression(compiler* compile, compile_block* block
 	case DT_Char:
 		return ConstantInt::get(Type::getInt8Ty(block->function->getContext()), APInt(8, get_char(P), false));
 	default:
-		compiler_error(compile, P, "Uncompilable expression in AST.");
+		compiler_error(P, "Uncompilable expression in AST.");
 		break;
 	}
 

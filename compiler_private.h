@@ -59,14 +59,6 @@ struct compiler
 
 void init_function_table(compiler* compile);
 
-void compiler_error(compiler* compile, const char* Error, ...);
-void compiler_error(compiler* compile, pointer P, const char* Error, ...);
-
-//#define assert_cerror(pred, compile, error, args...)	\
-//	if(pred) compiler_error(compile, error , ## args);
-#define assert_cerror(pred, compile, P, error, args...)	\
-	if(!(pred)) compiler_error(compile, P, error , ## args);
-
 compile_block* compiler_create_function_block(compiler* compile, const char* Name="", const llvm::Type* RetType = NULL, pointer Params=NIL, compile_block* parent_block = NULL);
 void compiler_destroy_function_block(compile_block* block);
 void compiler_add_to_scope(compile_block* block, symbol sym, llvm::Value* val);
