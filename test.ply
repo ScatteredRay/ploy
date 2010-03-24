@@ -1,3 +1,6 @@
+;; Copyright (c) 2009, Nicholas "Indy" Ray. All rights reserved.
+;; See the LICENSE file for usage, modification, and distribution terms.
+
 (declare (div_add x :float y :float z :float) :float)
 
 (define-type mytype int)

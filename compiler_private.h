@@ -1,3 +1,5 @@
+// Copyright (c) 2009, Nicholas "Indy" Ray. All rights reserved.
+// See the LICENSE file for usage, modification, and distribution terms.
 #ifndef _compiler_private_h_
 #define _compiler_private_h_
 

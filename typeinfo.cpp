@@ -1,3 +1,5 @@
+// Copyright (c) 2009, Nicholas "Indy" Ray. All rights reserved.
+// See the LICENSE file for usage, modification, and distribution terms.
 #define __STDC_LIMIT_MACROS
 #define __STDC_CONSTANT_MACROS
 

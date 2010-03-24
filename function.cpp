@@ -1,3 +1,5 @@
+// Copyright (c) 2009, Nicholas "Indy" Ray. All rights reserved.
+// See the LICENSE file for usage, modification, and distribution terms.
 #include "function.h"
 
 compiler_type* create_compiler_type(dynamic_types type_ID)
