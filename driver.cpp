@@ -16,7 +16,8 @@
 symbol_table* sym_tbl;
 
 static llvm::cl::opt<std::string> InputFile(llvm::cl::desc("<input source>"),
-                                            llvm::cl::Positional);
+                                            llvm::cl::Positional,
+                                            llvm::cl::Required);
 
 static llvm::cl::opt<std::string> OutputFile("output-file",
                                              llvm::cl::desc("File to direct the output to."), 
