@@ -7,4 +7,56 @@ LINKLIBS = -lLLVMCore -lLLVMCodeGen -lLLVMSystem -lLLVMSupport ;
 C++FLAGS = -g ;
 HDRS = $(LLVMDIR)/include/ ;
 
-Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp ;
+C++ = clang++ ;
+LINK = clang++ ;
+
+PLOY = ./bootstrap ;
+LLVMAS = llvm-as ;
+SUFLL = .ll ;
+
+rule ploy.compile TARGET : SOURCE
+{
+    Depends $(TARGET) : $(SOURCE) ;
+    Clean clean : $(TARGET) ;
+}
+
+actions ploy.compile
+{
+    $(PLOY) -o=$(1) $(2) ;
+}
+
+rule ploy.build TARGET : SOURCE
+{
+    LLFILE = $(SOURCE:S=$(SUFLL)) ;
+    ploy.compile $(LLFILE) : $(SOURCE) ;
+    llvm.as $(TARGET) : $(LLFILE) ;
+}
+
+rule llvm.as TARGET : SOURCE
+{
+    Depends $(TARGET) : $(SOURCE) ;
+    Clean clean : $(TARGET) ;
+}
+
+actions llvm.as
+{
+    $(LLVMAS) -o=$(1) $(2) ;
+}
+
+rule UserObject
+{
+    switch $(>)
+    {
+    case *.ply : ploy.build $(<) : $(>) ;
+    case *.ll  : llvm.as $(<) : $(>) ;
+    case *     : ECHO "unknown suffix on" $(>) ;
+    }
+}
+
+# bootstrap is just the sections of the compiler that are written in C/C++ this is used to bootstrap the rest of the compiler that may rely on ploy source.
+
+Main bootstrap : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp ;
+
+# Now we build the actual compiler.
+
+Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp stdlib/tree.ply ;
