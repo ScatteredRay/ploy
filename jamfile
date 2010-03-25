@@ -11,8 +11,14 @@ C++ = clang++ ;
 LINK = clang++ ;
 
 PLOY = ./bootstrap ;
-LLVMAS = llvm-as ;
+LLVMLLC = llc ;
 SUFLL = .ll ;
+
+AS = as ;
+SUFAS = .s ;
+
+LLCFLAGS = -march=x86-64 ;
+ASFLAGS = -arch x86_64 ;
 
 rule ploy.compile TARGET : SOURCE
 {
@@ -27,20 +33,33 @@ actions ploy.compile
 
 rule ploy.build TARGET : SOURCE
 {
-    LLFILE = $(SOURCE:S=$(SUFLL)) ;
+    local LLFILE = $(SOURCE:S=$(SUFLL)) ;
+    local ASFILE = $(SOURCE:S=$(SUFAS)) ;
     ploy.compile $(LLFILE) : $(SOURCE) ;
-    llvm.as $(TARGET) : $(LLFILE) ;
+    llvm.llc $(ASFILE) : $(LLFILE) ;
+    as.build $(TARGET) : $(ASFILE) ;
 }
 
-rule llvm.as TARGET : SOURCE
+rule llvm.llc TARGET : SOURCE
 {
     Depends $(TARGET) : $(SOURCE) ;
     Clean clean : $(TARGET) ;
 }
 
-actions llvm.as
+actions llvm.llc
 {
-    $(LLVMAS) -o=$(1) $(2) ;
+    $(LLVMLLC) -o=$(1) $(LLCFLAGS) $(2) ;
+}
+
+rule as.build TARGET : SOURCE
+{
+    Depends $(TARGET) : $(SOURCE) ;
+    Clean clean :$(TARGET) ;
+}
+
+actions as.build
+{
+    $(AS) $(ASFLAGS) -o $(1) $(2) ;
 }
 
 rule UserObject
@@ -48,7 +67,6 @@ rule UserObject
     switch $(>)
     {
     case *.ply : ploy.build $(<) : $(>) ;
-    case *.ll  : llvm.as $(<) : $(>) ;
     case *     : ECHO "unknown suffix on" $(>) ;
     }
 }
