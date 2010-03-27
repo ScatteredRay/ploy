@@ -169,11 +169,11 @@ void compiler_destroy_function_block(compile_block* block)
 	delete block;
 }
 
-compile_block* compiler_init_module(compiler* compile)
+compile_block* compiler_init_module(compiler* compile, const char* entry)
 {
 	compile->module = new Module("", getGlobalContext());
 
-	return compiler_create_function_block(compile, "main");
+	return compiler_create_function_block(compile, entry);
 }
 
 llvm::Value* compiler_resolve_variable(compiler* compile, compile_block* block, symbol S)
@@ -296,9 +296,9 @@ llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* 
 	return LastExp;
 }
 
-void compiler_compile_expression(compiler* compile, pointer P)
+void compiler_compile_expression(compiler* compile, pointer P, const char* entry)
 {
-	compile_block* block = compiler_init_module(compile);
+	compile_block* block = compiler_init_module(compile, entry);
 
 	compiler_resolve_expression_list(compile, block, P);
 	block->builder->CreateRetVoid();

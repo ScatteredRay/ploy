@@ -27,6 +27,10 @@ static llvm::cl::alias Output("o",
                               llvm::cl::aliasopt(OutputFile),
                               llvm::cl::desc("Alias for -output-file."));
 
+static llvm::cl::opt<std::string> EntryFunc("entry-func",
+                                            llvm::cl::desc("Name of functon to generate for module entry code"),
+                                            llvm::cl::init("main"));
+
 
 int main(int argc, char** argv)
 {
@@ -64,7 +68,7 @@ int main(int argc, char** argv)
 
 	compiler* compile = init_compiler(tbl);
 
-	compiler_compile_expression(compile, ret);
+	compiler_compile_expression(compile, ret, EntryFunc.c_str());
 	compiler_print_module(compile);
 	compiler_write_asm_file(compile, OutputFile.c_str());
 

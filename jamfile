@@ -6,11 +6,12 @@ LINKFLAGS = -g -L$(LLVMLIBS) ;
 LINKLIBS = -lLLVMCore -lLLVMCodeGen -lLLVMSystem -lLLVMSupport ;
 C++FLAGS = -g ;
 HDRS = $(LLVMDIR)/include/ ;
+PLOYFLAGS = -entry-func=ploy_main ;
 
 C++ = clang++ ;
 LINK = clang++ ;
-
 PLOY = ./bootstrap ;
+
 LLVMLLC = llc ;
 SUFLL = .ll ;
 
@@ -28,7 +29,7 @@ rule ploy.compile TARGET : SOURCE
 
 actions ploy.compile
 {
-    $(PLOY) -o=$(1) $(2) ;
+    $(PLOY) -o=$(1) $(PLOYFLAGS) $(2) ;
 }
 
 rule ploy.build TARGET : SOURCE
