@@ -20,6 +20,9 @@ llvm::Value* compiler_resolve_list_op(compiler* compile, compile_block* block, p
 		else
 		{
 			Value* rhv = compiler_resolve_expression(compile, block, pair_car(P));
+            
+            assert_cerror(lhv->getType() == rhv->getType(), P, "Incompatible types %s and %s for binary operation.", lhv->getType()->getDescription().c_str(), rhv->getType()->getDescription().c_str());
+            
 			lhv = opfunc(block, lhv, rhv, UP);
 		}
 		
