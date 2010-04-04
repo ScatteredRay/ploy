@@ -1,0 +1,1 @@
+(setf *template-file* "ploy.ter")

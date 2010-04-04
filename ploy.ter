@@ -1,0 +1,105 @@
+(cl-who:htm
+ (:html
+  (:head
+   (:meta :http-equiv "Content-Type" :content "text/html; charset=utf-8")
+   (:title "Ploy")
+   (:style :type "text/css"
+"
+      html, body {
+      margin: 0px;
+      height: 100%;
+      background-color: #000000;
+      font-family: \"Helvetica,Arial,FreeSans\";
+      color: #000000;
+      padding: 0;
+      }
+      #container {
+      margin: 0px auto;
+      width: 700px;
+      height: auto;
+      min-height: 100%;
+      background-color: #ffffff;
+      }
+      h1 { font-size: 3.8em; color: #000000; margin-bottom: 3px; }
+      h1 .small { font-size: 0.4em; }
+      h1 a { text-decoration: none }
+      h2 { font-size: 1.5em; color: #000000; }
+      h3 { text-align: center; color: #000000; }
+      img { border: 0; }
+      a { color: #24dee0; }
+      .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+      .download { float: right; }
+      pre { margin: 0 auto; width: 90%; background: #000; color: #fff; padding: 15px;}
+      hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+      .footer { text-align:center; padding-top:30px; font-style: italic; }
+      .header-link { color: #000000; }"))
+  (:body
+   (:a :href "http://github.com/Arelius/ploy"
+       (:img :style "position: absolute; top: 0; right: 0; border: 0;"
+             :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+             :alt "Fork me on GitHub"))
+
+   (:div :id "container"
+         (:div :class "download"
+               (:a :href "http://github.com/Arelius/ploy/zipball/master"
+                   (:img :width 90
+                         :src "http://github.com/images/modules/download/zip.png"
+                         :alt "zip download"))
+               (:a :href "http://github.com/Arelius/ploy/tarball/master"
+                   (:img :width 90
+                         :src "http://github.com/images/modules/download/tar.png"
+                         :alt "tar download")))
+
+         (:h1
+          (:a :href "http://github.com/Arelius/ploy"
+              :class "header-link"
+              "Ploy")
+          (:span :class "small"
+                 " by "
+                 (:a :href "http://github.com/Arelius"
+                     :class "header-link"
+                     "Arelius")))
+
+         (:div :class "description"
+               "Static typed, LLVM compiled scheme dialect.")
+
+         (:h2 "Authors")
+         (:p "Nicholas \"Indy\" Ray"
+             (:br) (:br))
+
+         (:h2 "Contact")
+         (:p "Indy @ ishere (dot) com"
+             (:br))
+
+         (:h2 "Download")
+         (:p
+          "You can download this project in either "
+          (:a :href "http://github.com/Arelius/ploy/zipball/master"
+              "zip")
+          " or "
+          (:a :href "http://github.com/Arelius/ploy/tarball/master"
+              "tar")
+          " formats")
+
+         (:p "You can also clone the project with "
+             (:a :href "http://git-scm.com"
+                 "Git")
+             " by running:"
+             (:pre
+              "$ git clone git://github.com/Arelius/ploy"))
+
+         (:div :class "footer"
+               "get the source code on GitHub : "
+               (:a :href "http://github.com/Arelius/ploy"
+                   "Arelius/ploy")))
+
+   ;; Google analytics
+   (:script :type "text/javascript"
+            "var gaJsHost = ((\"https:\" == document.location.protocol) ? \"https://ssl.\" : \"http://www.\");
+      document.write(unescape(\"%3Cscript src='\" + gaJsHost + \"google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E\"));")
+
+   (:script :type "text/javascript"
+            "      try {
+      var pageTracker = _gat._getTracker(\"UA-15628361-1\");
+      pageTracker._trackPageview();
+      } catch(err) {}"))))
