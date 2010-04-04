@@ -47,7 +47,9 @@
              :width "80%"
              :border-bottom "1px solid #aaa")
             ((#:banner)
-             :background-color "#cccccc")
+             :background-color "#cccccc"
+             :background "-webkit-gradient(linear, left top, left bottom, to(#444), from(#ccc))"
+             :width "inherit")
             ((.links)
              :text-align "center")
             ((.download)
@@ -59,10 +61,11 @@
   (:body
    (:div :id "container"
          (:div :id "banner"
-               (:a :href "http://github.com/Arelius/ploy"
-                   (:img :style (inline-css :float "right")
-                         :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
-                         :alt "Fork me on GitHub"))
+               (:div :style (inline-css :width "inherit" :position "absolute")
+                     (:a :href "http://github.com/Arelius/ploy"
+                         (:img :style (inline-css :float "right")
+                               :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+                               :alt "Fork me on GitHub")))
                (:h1
                 (:a :href "http://github.com/Arelius/ploy"
                     "Ploy")
