@@ -16,7 +16,6 @@
              :margin "0px auto"
              :width 700
              :height "auto"
-             :min-height "100%"
              :background-color "#ffffff")
             ((h1)
              :font-size "3.8em"
@@ -36,7 +35,7 @@
             ((img)
              :border 0)
             ((a)
-             :color "#24dee9")
+             :color "#002bb8")
             ((pre)
              :margin "0 auto"
              :width "90%"
@@ -47,11 +46,10 @@
              :border 0
              :width "80%"
              :border-bottom "1px solid #aaa")
-            ((.description)
-             :font-size "1.2em"
-             :margin-bottom "30px"
-             :margin-top "30px"
-             :font-style "italic")
+            ((#:banner)
+             :background-color "#cccccc")
+            ((.links)
+             :text-align "center")
             ((.download)
              :float "right")
             ((.footer)
@@ -59,32 +57,32 @@
              :padding-top "30px"
              :font-style "italic"))))
   (:body
-   (:a :href "http://github.com/Arelius/ploy"
-       (:img :style (inline-css :position "absolute" :top 0 :right 0 :border 0)
-             :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
-             :alt "Fork me on GitHub"))
-
    (:div :id "container"
-         (:div :class "download"
-               (:a :href "http://github.com/Arelius/ploy/zipball/master"
-                   (:img :width 90
-                         :src "http://github.com/images/modules/download/zip.png"
-                         :alt "zip download"))
-               (:a :href "http://github.com/Arelius/ploy/tarball/master"
-                   (:img :width 90
-                         :src "http://github.com/images/modules/download/tar.png"
-                         :alt "tar download")))
+         (:div :id "banner"
+               (:a :href "http://github.com/Arelius/ploy"
+                   (:img :style (inline-css :float "right")
+                         :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+                         :alt "Fork me on GitHub"))
+               (:h1
+                (:a :href "http://github.com/Arelius/ploy"
+                    "Ploy")
+                (:span :class "small"
+                       " programming language"))
 
-         (:h1
-          (:a :href "http://github.com/Arelius/ploy"
-              "Ploy")
-          (:span :class "small"
-                 " by "
-                 (:a :href "http://github.com/Arelius"
-                     "Arelius")))
-
-         (:div :class "description"
-               "Static typed, LLVM compiled scheme dialect.")
+               (:div :class "links"
+                     (:a :href "index.html" "About")
+                     " "
+                     (:a :href "news.html" "News")
+                     " "
+                     (:a :href "download.html" "Download")
+                     " "
+                     (:a :href "docs.html" "Documentation")
+                     " "
+                     (:a :href "faq.html" "FAQ")
+                     " "
+                     (:a :href "examples.html" "Examples")
+                     " "
+                     (:a :href "contact.html" "Contact")))
 
          (content)
 
