@@ -53,6 +53,7 @@
              :z-index 0)
             ((.links)
              :text-align "right"
+             :word-spacing "0.4em"
              :padding-bottom 5)
             ((.download)
              :float "right")
