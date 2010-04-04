@@ -49,9 +49,11 @@
             ((#:banner)
              :background-color "#cccccc"
              :background "-webkit-gradient(linear, left top, left bottom, to(#444), from(#ccc))"
-             :width "inherit")
+             :width "inherit"
+             :z-index 0)
             ((.links)
-             :text-align "center")
+             :text-align "center"
+             :float "right")
             ((.download)
              :float "right")
             ((.footer)
@@ -61,31 +63,31 @@
   (:body
    (:div :id "container"
          (:div :id "banner"
-               (:div :style (inline-css :width "inherit" :position "absolute")
-                     (:a :href "http://github.com/Arelius/ploy"
-                         (:img :style (inline-css :float "right")
-                               :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
-                               :alt "Fork me on GitHub")))
+               (:a :href "http://github.com/Arelius/ploy"
+                   (:img :style (inline-css :float "right")
+                         :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+                         :alt "Fork me on GitHub"))
+
                (:h1
                 (:a :href "http://github.com/Arelius/ploy"
                     "Ploy")
                 (:span :class "small"
-                       " programming language"))
+                       " programming language")))
 
-               (:div :class "links"
-                     (:a :href "index.html" "About")
-                     " "
-                     (:a :href "news.html" "News")
-                     " "
-                     (:a :href "download.html" "Download")
-                     " "
-                     (:a :href "docs.html" "Documentation")
-                     " "
-                     (:a :href "faq.html" "FAQ")
-                     " "
-                     (:a :href "examples.html" "Examples")
-                     " "
-                     (:a :href "contact.html" "Contact")))
+         (:div :class "links"
+               (:a :href "index.html" "About")
+               " "
+               (:a :href "news.html" "News")
+               " "
+               (:a :href "download.html" "Download")
+               " "
+               (:a :href "docs.html" "Documentation")
+               " "
+               (:a :href "faq.html" "FAQ")
+               " "
+               (:a :href "examples.html" "Examples")
+               " "
+               (:a :href "contact.html" "Contact"))
 
          (content)
 
