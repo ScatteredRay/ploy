@@ -52,8 +52,8 @@
              :width "inherit"
              :z-index 0)
             ((.links)
-             :text-align "center"
-             :float "right")
+             :text-align "right"
+             :padding-bottom 5)
             ((.download)
              :float "right")
             ((.footer)
@@ -72,22 +72,22 @@
                 (:a :href "http://github.com/Arelius/ploy"
                     "Ploy")
                 (:span :class "small"
-                       " programming language")))
+                       " programming language"))
 
-         (:div :class "links"
-               (:a :href "index.html" "About")
-               " "
-               (:a :href "news.html" "News")
-               " "
-               (:a :href "download.html" "Download")
-               " "
-               (:a :href "docs.html" "Documentation")
-               " "
-               (:a :href "faq.html" "FAQ")
-               " "
-               (:a :href "examples.html" "Examples")
-               " "
-               (:a :href "contact.html" "Contact"))
+               (:div :class "links"
+                     (:a :href "index.html" "About")
+                     " "
+                     (:a :href "news.html" "News")
+                     " "
+                     (:a :href "download.html" "Download")
+                     " "
+                     (:a :href "docs.html" "Documentation")
+                     " "
+                     (:a :href "faq.html" "FAQ")
+                     " "
+                     (:a :href "examples.html" "Examples")
+                     " "
+                     (:a :href "contact.html" "Contact")))
 
          (content)
 
