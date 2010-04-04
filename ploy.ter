@@ -4,38 +4,63 @@
    (:meta :http-equiv "Content-Type" :content "text/html; charset=utf-8")
    (:title "Ploy")
    (:style :type "text/css"
-"
-      html, body {
-      margin: 0px;
-      height: 100%;
-      background-color: #000000;
-      font-family: \"Helvetica,Arial,FreeSans\";
-      color: #000000;
-      padding: 0;
-      }
-      #container {
-      margin: 0px auto;
-      width: 700px;
-      height: auto;
-      min-height: 100%;
-      background-color: #ffffff;
-      }
-      h1 { font-size: 3.8em; color: #000000; margin-bottom: 3px; }
-      h1 .small { font-size: 0.4em; }
-      h1 a { text-decoration: none }
-      h2 { font-size: 1.5em; color: #000000; }
-      h3 { text-align: center; color: #000000; }
-      img { border: 0; }
-      a { color: #24dee0; }
-      .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-      .download { float: right; }
-      pre { margin: 0 auto; width: 90%; background: #000; color: #fff; padding: 15px;}
-      hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-      .footer { text-align:center; padding-top:30px; font-style: italic; }
-      .header-link { color: #000000; }"))
+           (css
+            ((html body)
+             :margin 0
+             :height "100%"
+             :background-color "#000000"
+             :font-family "\"Helvetica,Arial,FreeSans\""
+             :color "#000000"
+             :padding 0)
+            ((#:container)
+             :margin "0px auto"
+             :width 700
+             :height "auto"
+             :min-height "100%"
+             :background-color "#ffffff")
+            ((h1)
+             :font-size "3.8em"
+             :color "#000000"
+             :margin-bottom 3)
+            ((h1 .small)
+             :font-size "0.4em")
+            ((h1 a)
+             :text-decoration "none"
+             :color "#000000")
+            ((h2)
+             :font-size "1.5em"
+             :color "#000000")
+            ((h3)
+             :text-align "center"
+             :color "#000000")
+            ((img)
+             :border 0)
+            ((a)
+             :color "#24dee9")
+            ((pre)
+             :margin "0 auto"
+             :width "90%"
+             :background "#000"
+             :color "#fff"
+             :padding "14px")
+            ((hr)
+             :border 0
+             :width "80%"
+             :border-bottom "1px solid #aaa")
+            ((.description)
+             :font-size "1.2em"
+             :margin-bottom "30px"
+             :margin-top "30px"
+             :font-style "italic")
+            ((.download)
+             :float "right")
+            ((.footer)
+             :text-align "center"
+             :padding-top "30px"
+             :font-style "italic"))))
   (:body
    (:a :href "http://github.com/Arelius/ploy"
-       (:img :style "position: absolute; top: 0; right: 0; border: 0;"
+       (:img :style (inline-css :position "absolute" :top 0 :right 0 :border 0)
              :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
              :alt "Fork me on GitHub"))
 
@@ -52,18 +77,16 @@
 
          (:h1
           (:a :href "http://github.com/Arelius/ploy"
-              :class "header-link"
               "Ploy")
           (:span :class "small"
                  " by "
                  (:a :href "http://github.com/Arelius"
-                     :class "header-link"
                      "Arelius")))
 
          (:div :class "description"
                "Static typed, LLVM compiled scheme dialect.")
 
-         content
+         (content)
 
          (:div :class "footer"
                "get the source code on GitHub : "
