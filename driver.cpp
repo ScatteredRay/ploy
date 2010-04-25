@@ -37,44 +37,43 @@ int main(int argc, char** argv)
     // Should ParseCommandLineOptions be able to accept a const argv?
     llvm::cl::ParseCommandLineOptions(argc, argv, "ploy compiler\n");
 
-	const char* file_location = InputFile.c_str();
+    const char* file_location = InputFile.c_str();
 
-	symbol_table* tbl = sym_tbl = init_symbol_table();
+    symbol_table* tbl = sym_tbl = init_symbol_table();
 
-	parser* parse = init_parser(tbl);
-	
-	FILE* fin = fopen(file_location, "r");
-	if(!fin)
-	{
-		printf("Input File \"%s\" does not exist.\n", file_location);
-		return 1;
-	}
+    parser* parse = init_parser(tbl);
 
-	fseek(fin, 0, SEEK_END);
-	size_t flen = ftell(fin);
-	rewind(fin);
+    FILE* fin = fopen(file_location, "r");
+    if(!fin)
+    {
+        printf("Input File \"%s\" does not exist.\n", file_location);
+        return 1;
+    }
 
-	char* buffer = new char[(flen+1)*sizeof(char)];
-	fread(buffer, sizeof(char), flen, fin);
-	buffer[flen] = '\0';
-	fclose(fin);
+    fseek(fin, 0, SEEK_END);
+    size_t flen = ftell(fin);
+    rewind(fin);
 
-	pointer ret = parser_parse_expression(parse, buffer);
+    char* buffer = new char[(flen+1)*sizeof(char)];
+    fread(buffer, sizeof(char), flen, fin);
+    buffer[flen] = '\0';
+    fclose(fin);
 
-	destroy_parser(parse);
-	type_map type_define_map;
-	transform_tree_gen_typedef(ret, tbl, &type_define_map);
-	transform_tree_gen_typeinfo(ret, tbl, &type_define_map);
+    pointer ret = parser_parse_expression(parse, buffer);
 
-	compiler* compile = init_compiler(tbl);
+    destroy_parser(parse);
+    type_map type_define_map;
+    transform_tree_gen_typedef(ret, tbl, &type_define_map);
+    transform_tree_gen_typeinfo(ret, tbl, &type_define_map);
 
-	compiler_compile_expression(compile, ret, EntryFunc.c_str());
-	compiler_print_module(compile);
-	compiler_write_asm_file(compile, OutputFile.c_str());
+    compiler* compile = init_compiler(tbl);
 
-	destroy_compiler(compile);
+    compiler_compile_expression(compile, ret, EntryFunc.c_str());
+    compiler_print_module(compile);
+    compiler_write_asm_file(compile, OutputFile.c_str());
 
-	destroy_symbol_table(tbl);
-	return 0;
+    destroy_compiler(compile);
+
+    destroy_symbol_table(tbl);
+    return 0;
 }
-

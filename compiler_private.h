@@ -24,39 +24,39 @@
 
 namespace llvm
 {
-	class Type;
+    class Type;
 }
 
 struct compiler_scope
 {
-	compiler_scope* parent_scope;
-	std::map<symbol, llvm::Value*, sym_cmp> scope_map;
+    compiler_scope* parent_scope;
+    std::map<symbol, llvm::Value*, sym_cmp> scope_map;
 };
 
 struct compile_block
 {
-	llvm::Function* function;
-	llvm::BasicBlock* block;
-	llvm::IRBuilder<>* builder;
-	compiler_scope* current_scope;
+    llvm::Function* function;
+    llvm::BasicBlock* block;
+    llvm::IRBuilder<>* builder;
+    compiler_scope* current_scope;
 };
 
 typedef llvm::Value* (*form_compile_func)(compiler*, compile_block*, pointer);
 
 struct compiler_special_form
 {
-	form_compile_func special_form;
-	compiler_special_form()
-	{
-		special_form = NULL;
-	}
+    form_compile_func special_form;
+    compiler_special_form()
+    {
+        special_form = NULL;
+    }
 };
 
 struct compiler
 {
-	symbol_table* sym_table;
-	llvm::Module* module;
-	std::map<symbol, compiler_special_form, sym_cmp> form_table;
+    symbol_table* sym_table;
+    llvm::Module* module;
+    std::map<symbol, compiler_special_form, sym_cmp> form_table;
 };
 
 void init_function_table(compiler* compile);
@@ -70,4 +70,3 @@ llvm::Value* compiler_resolve_expression_list(compiler* compile, compile_block* 
 std::vector<const llvm::Type*> compiler_populate_param_types(compiler* compile, pointer P);
 
 #endif //_compiler_private_h_
-

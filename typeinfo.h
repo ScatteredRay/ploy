@@ -16,7 +16,7 @@ typedef std::map<symbol, pointer, sym_cmp> type_map;
 
 namespace llvm
 {
-	class Type;
+    class Type;
     class LLVMContext;
 }
 

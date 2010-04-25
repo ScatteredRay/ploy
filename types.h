@@ -14,29 +14,29 @@ const pointer NIL = NULL;
 
 enum dynamic_types
 {
-	DT_Pair = 0,
-	DT_Symbol = 1,
-	DT_Int = 2,
-	DT_Real = 3,
-	DT_String = 4,
-	DT_Char = 5,
-	DT_TypeInfo = 6,
-	DT_Invalid = 7,
-	DT_Any = 8,
-	DT_Static_Flag = 0x80000000
+    DT_Pair = 0,
+    DT_Symbol = 1,
+    DT_Int = 2,
+    DT_Real = 3,
+    DT_String = 4,
+    DT_Char = 5,
+    DT_TypeInfo = 6,
+    DT_Invalid = 7,
+    DT_Any = 8,
+    DT_Static_Flag = 0x80000000
 };
 
 struct dynamic_type
 {
-	dynamic_types Id;
-	size_t AllocSize;
-	void (*finish)(pointer P);
+    dynamic_types Id;
+    size_t AllocSize;
+    void (*finish)(pointer P);
 };
 
 struct pair
 {
-	pointer _car;
-	pointer _cdr;
+    pointer _car;
+    pointer _cdr;
 };
 
 const dynamic_type* get_type(dynamic_types typeId);
@@ -84,6 +84,6 @@ void print_object(pointer P, symbol_table* table);
 #define cadaar(p)        car(cdr(car(car(p))))
 #define cadddr(p)        car(cdr(cdr(cdr(p))))
 #define cddddr(p)        cdr(cdr(cdr(cdr(p))))
-	
+
 
 #endif //_TYPES_H_

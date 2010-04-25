@@ -7,7 +7,7 @@
 
 struct environment
 {
-	FILE* out;
+    FILE* out;
 };
 
 environment* create_environment();
