@@ -9,6 +9,9 @@
 #include "types.h"
 #include "compiler.h"
 #include "typeinfo.h"
+
+#include "symbols.h"
+
 #include "stdio.h"
 #include <map>
 #include "llvm/Support/CommandLine.h"
@@ -40,6 +43,7 @@ int main(int argc, char** argv)
     const char* file_location = InputFile.c_str();
 
     symbol_table* tbl = sym_tbl = init_symbol_table();
+    init_symbols(tbl);
 
     parser* parse = init_parser(tbl);
 
