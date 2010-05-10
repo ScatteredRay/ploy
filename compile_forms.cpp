@@ -5,6 +5,7 @@
 #include "typeinfo.h"
 #include "error.h"
 #include <stdint.h>
+#include <llvm/LLVMContext.h>
 
 using namespace llvm;
 
@@ -61,9 +62,9 @@ llvm::Value* compiler_mul_form(compiler* compile, compile_block* block, pointer 
 
 llvm::Value* combine_div_op(compile_block* block, llvm::Value* lhv, llvm::Value* rhv, void* UP)
 {
-    if(lhv->getType()->isIntOrIntVector() && rhv->getType()->isIntOrIntVector())
+    if(lhv->getType()->isIntOrIntVectorTy() && rhv->getType()->isIntOrIntVectorTy())
         return block->builder->CreateBinOp(Instruction::SDiv, lhv, rhv);
-    else if(lhv->getType()->isFPOrFPVector() && rhv->getType()->isFPOrFPVector())
+    else if(lhv->getType()->isFPOrFPVectorTy() && rhv->getType()->isFPOrFPVectorTy())
         return block->builder->CreateBinOp(Instruction::FDiv, lhv, rhv);
     else
         assert(false);

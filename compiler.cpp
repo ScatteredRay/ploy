@@ -5,9 +5,9 @@
 #include "typeinfo.h"
 #include "error.h"
 #include <stdint.h>
-#include <llvm/CodeGen/FileWriters.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <llvm/LLVMContext.h>
 #include <fstream>
 
 using namespace llvm;

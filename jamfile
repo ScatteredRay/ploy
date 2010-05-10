@@ -1,11 +1,11 @@
 LINK = g++ ;
-LLVMDIR = /Users/Indy/local/llvm ;
+LLVMDIR = /Users/indy/dev/llvm ;
 DEBUGGING_SYMBOLS = YES ;
 LLVMLIBS = $(LLVMDIR)/lib/ ;
 LINKFLAGS = -g -L$(LLVMLIBS) ;
 LINKLIBS = -lLLVMCore -lLLVMCodeGen -lLLVMSystem -lLLVMSupport ;
 C++FLAGS = -g ;
-HDRS = $(LLVMDIR)/include/ ;
+HDRS = $(LLVMDIR)/tools/clang/include/ $(LLVMDIR)/tools/clang/lib/CodeGen/ ;
 PLOYFLAGS = -entry-func=ploy_main ;
 
 C++ = clang++ ;
