@@ -65,8 +65,9 @@ int main(int argc, char** argv)
     fclose(fin);
 
     pointer ret = parser_parse_expression(parse, buffer);
-
     destroy_parser(parse);
+    delete buffer;
+
     ploy_do_compile(ret, tbl);
     type_map type_define_map;
     transform_tree_gen_typedef(ret, tbl, &type_define_map);
