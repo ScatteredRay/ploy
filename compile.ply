@@ -28,3 +28,8 @@
 (declare (alloc_string len :size_t) :pointer)
 
 (declare (print_object P :pointer table :symbol_table) :void)
+
+(declare (putchar c :int) :int)
+
+(define (ploy_do_compile P :pointer sym :symbol_table) :int
+  0)

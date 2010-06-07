@@ -11,6 +11,7 @@
 #include "typeinfo.h"
 
 #include "symbols.h"
+#include "ploy_calls.h"
 
 #include "stdio.h"
 #include <map>
@@ -66,6 +67,7 @@ int main(int argc, char** argv)
     pointer ret = parser_parse_expression(parse, buffer);
 
     destroy_parser(parse);
+    ploy_do_compile(ret, tbl);
     type_map type_define_map;
     transform_tree_gen_typedef(ret, tbl, &type_define_map);
     transform_tree_gen_typeinfo(ret, tbl, &type_define_map);
