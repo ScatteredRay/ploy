@@ -12,4 +12,6 @@ parser* init_parser(symbol_table* table);
 void destroy_parser(parser* parse);
 pointer parser_parse_expression(parser* parse, const char* string);
 
+pointer parse_file_to_tree(const char* file_location, symbol_table* table);
+
 #endif //_PARSER_H_

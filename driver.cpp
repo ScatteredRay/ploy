@@ -9,6 +9,7 @@
 #include "types.h"
 #include "compiler.h"
 #include "typeinfo.h"
+#include "include.h"
 
 #include "symbols.h"
 #include "ploy_calls.h"
@@ -46,27 +47,11 @@ int main(int argc, char** argv)
     symbol_table* tbl = sym_tbl = init_symbol_table();
     init_symbols(tbl);
 
-    parser* parse = init_parser(tbl);
-
-    FILE* fin = fopen(file_location, "r");
-    if(!fin)
-    {
-        printf("Input File \"%s\" does not exist.\n", file_location);
+    pointer ret = parse_file_to_tree(file_location, tbl);
+    if(!ret)
         return 1;
-    }
 
-    fseek(fin, 0, SEEK_END);
-    size_t flen = ftell(fin);
-    rewind(fin);
-
-    char* buffer = new char[(flen+1)*sizeof(char)];
-    fread(buffer, sizeof(char), flen, fin);
-    buffer[flen] = '\0';
-    fclose(fin);
-
-    pointer ret = parser_parse_expression(parse, buffer);
-    destroy_parser(parse);
-    delete buffer;
+    materialize_includes(&ret, tbl);
 
     ploy_do_compile(ret, tbl);
     type_map type_define_map;

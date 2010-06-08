@@ -63,8 +63,9 @@ pointer ploy_static_alloc(const dynamic_type* type)
 
 void ploy_free(pointer P)
 {
-    if(*(dynamic_types*)P & DT_Static_Flag)
-        return; // Abort free for static objects.
+    if(P == NIL ||
+       *(dynamic_types*)P & DT_Static_Flag)
+        return; // Abort free for static or NIL objects.
     const dynamic_type* T = get_type(get_type_id(P));
     if(T->finish)
         T->finish(P);
@@ -116,6 +117,18 @@ pointer pair_cdr(pointer P)
     return get_pair(P)->_cdr;
 }
 
+pointer* ref_car(pointer P)
+{
+    assert(is_type(P, DT_Pair));
+    return &get_pair(P)->_car;
+}
+
+pointer* ref_cdr(pointer P)
+{
+    assert(is_type(P, DT_Pair));
+    return &get_pair(P)->_cdr;
+}
+
 // we don't have any complicated trees atm, so we can just free the old when we set
 // watch out though, it'll only free the first link in a list.
 // also not in the main header so we don't overuse.
@@ -132,6 +145,27 @@ void set_cdr(pointer P, pointer V)
     assert(is_type(P, DT_Pair));
     ploy_free(get_pair(P)->_cdr);
     get_pair(P)->_cdr = V;
+}
+
+void clear_car(pointer P)
+{
+    assert(is_type(P, DT_Pair));
+    get_pair(P)->_car = NIL;
+}
+
+void clear_cdr(pointer P)
+{
+    assert(is_type(P, DT_Pair));
+    get_pair(P)->_cdr = NIL;
+}
+
+void append_in_place(pointer P, pointer V)
+{
+    assert(is_type(P, DT_Pair));
+    if(cdr(P) == NIL)
+        set_cdr(P, V);
+    else
+        append_in_place(cdr(P), V);
 }
 
 symbol* get_symbol(pointer P)

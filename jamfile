@@ -74,8 +74,8 @@ rule UserObject
 
 # bootstrap is just the sections of the compiler that are written in C/C++ this is used to bootstrap the rest of the compiler that may rely on ploy source.
 
-Main bootstrap : parser.cpp types.cpp driver.cpp symbol.cpp symbols.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp bootstrap_shims.cpp ;
+Main bootstrap : parser.cpp types.cpp driver.cpp symbol.cpp symbols.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp include.cpp bootstrap_shims.cpp ;
 
 # Now we build the actual compiler.
 
-Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp symbols.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp compile.ply ;
+Main ploy : parser.cpp types.cpp driver.cpp symbol.cpp symbols.cpp function.cpp lib.cpp environment.cpp compiler.cpp typeinfo.cpp compile_forms.cpp include.cpp compile.ply ;

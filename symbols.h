@@ -12,5 +12,6 @@ void init_symbols(symbol_table* tbl);
 #endif //DECLARE_SYMBOL
 
 DECLARE_SYMBOL(mangle_name)
+DECLARE_SYMBOL(include)
 
 #endif //_SYMBOLS_H_

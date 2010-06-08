@@ -1,35 +1,6 @@
 ;; Copyright (c) 2009, Nicholas "Indy" Ray. All rights reserved.
 ;; See the LICENSE file for usage, modification, and distribution terms.
-(define-type symbol_table pointer)
-(define-type symbol pointer)
-(define-type size_t int)
-(define-type char (int 8))
-
-(declare (create_pair car :pointer cdr :pointer) :pointer)
-;;(declare (create_symbol tbl :symbol_table sym :string) :pointer)
-(declare (create_symbol tbl :symbol_table sym :string len :size_t) :pointer)
-(declare (create_int i :int) :pointer)
-(declare (create_real f :float) :pointer)
-(declare (create_char c :char) :pointer)
-;;(declare (create_string str :string) :pointer)
-(declare (create_string str :string len :size_t) :pointer)
-
-(declare (destroy_list P :pointer) :void)
-
-(declare (pair_car P :pointer) :pointer)
-(declare (pair_cdr P :pointer) :pointer)
-
-(declare (get_symbol P :pointer) :symbol)
-(declare (get_int P :pointer) :int)
-(declare (get_real P :pointer) :float)
-(declare (get_char P :pointer) :char)
-(declare (get_bstring_ref P :pointer) :string)
-(declare (get_string P :pointer) :string)
-(declare (alloc_string len :size_t) :pointer)
-
-(declare (print_object P :pointer table :symbol_table) :void)
-
-(declare (putchar c :int) :int)
+(include "stdlib/tree.ply")
 
 (define (ploy_do_compile P :pointer sym :symbol_table) :int
   0)

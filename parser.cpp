@@ -351,9 +351,38 @@ parser* init_parser(symbol_table* table)
     parser* parse = new parser();
     parse->symbols = table;
     parse->curr = NULL;
+    
+    return parse;
 }
 
 void destroy_parser(parser* parse)
 {
     delete parse;
+}
+
+pointer parse_file_to_tree(const char* file_location, symbol_table* table)
+{
+    parser* parse = init_parser(table);
+
+    FILE* fin = fopen(file_location, "r");
+    if(!fin)
+    {
+        printf("Input File \"%s\" does not exist.\n", file_location);
+        return NIL;
+    }
+
+    fseek(fin, 0, SEEK_END);
+    size_t flen = ftell(fin);
+    rewind(fin);
+
+    char* buffer = new char[flen+1];
+    fread(buffer, 1, flen, fin);
+    buffer[flen] = '\0';
+    fclose(fin);
+
+    pointer ret = parser_parse_expression(parse, buffer);
+    destroy_parser(parse);
+    delete buffer;
+    
+    return ret;
 }
