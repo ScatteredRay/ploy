@@ -9,12 +9,12 @@
              :margin 0
              :height "100%"
              :background-color "#000000"
-             :font-family "\"Helvetica,Arial,FreeSans\""
+             :font-family "\"Goergia,Serif\""
              :color "#000000"
              :padding 0)
             ((#:container)
              :margin "0px auto"
-             :width 700
+             :width 768
              :height "auto"
              :background-color "#ffffff")
             ((h1)
@@ -53,8 +53,11 @@
              :width "inherit"
              :z-index 0)
             ((.links)
-             :text-align "right"
-             :word-spacing "0.4em"
+             :text-align "center"
+             :word-spacing "0.2em"
+             ;; Same size as the width and height for the image.
+             :margin-left 149
+             :margin-right 149
              :padding-bottom 5)
             ((.download)
              :float "right")
@@ -67,6 +70,8 @@
          (:div :id "banner"
                (:a :href "http://github.com/Arelius/ploy"
                    (:img :style (inline-css :float "right")
+                         :width 149
+                         :height 149
                          :src "http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
                          :alt "Fork me on GitHub"))
 
